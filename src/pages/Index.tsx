@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { SearchIcon, BarChart3, Users, Zap } from 'lucide-react';
+import { SearchIcon, BarChart3, Users, Zap, Shield, Sword, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,125 +33,226 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-red-600/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-48 h-48 bg-blue-600/10 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-20 left-1/3 w-56 h-56 bg-yellow-600/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      </div>
+
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-yellow-600/20"></div>
-        <div className="relative px-4 py-16 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-              Dota 2 Match
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-yellow-400">
-                {" "}Analyzer
-              </span>
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-300 max-w-2xl mx-auto">
-              Comprehensive match analysis tool providing detailed statistics, visualizations, 
-              and strategic insights to improve your gameplay.
+        <div className="absolute inset-0 bg-gradient-to-r from-red-600/30 to-yellow-600/20"></div>
+        
+        {/* Floating Icons */}
+        <div className="absolute top-20 left-20 animate-bounce delay-1000">
+          <Shield className="h-8 w-8 text-blue-400/60" />
+        </div>
+        <div className="absolute top-32 right-32 animate-bounce delay-2000">
+          <Sword className="h-10 w-10 text-red-400/60" />
+        </div>
+        <div className="absolute bottom-40 left-40 animate-bounce delay-500">
+          <Target className="h-6 w-6 text-yellow-400/60" />
+        </div>
+
+        <div className="relative px-4 py-20 sm:px-6 lg:px-8">
+          <div className="text-center animate-fade-in">
+            <div className="mb-8">
+              <h1 className="text-5xl font-bold tracking-tight text-white sm:text-7xl mb-4 animate-scale-in">
+                Dota 2 Match
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-yellow-400 to-red-500 animate-pulse">
+                  {" "}Analyzer
+                </span>
+              </h1>
+              <div className="w-32 h-1 bg-gradient-to-r from-red-500 to-yellow-500 mx-auto mb-6 animate-scale-in delay-300"></div>
+            </div>
+            
+            <p className="mt-6 text-xl leading-8 text-gray-300 max-w-3xl mx-auto animate-fade-in delay-500">
+              Unlock the secrets of your gameplay with our comprehensive match analysis tool. 
+              Get detailed statistics, visualizations, and AI-powered insights to dominate the Ancient.
             </p>
+            
+            <div className="mt-8 flex justify-center space-x-4 animate-fade-in delay-700">
+              <div className="px-4 py-2 bg-red-600/20 rounded-full border border-red-500/30">
+                <span className="text-red-400 font-medium">Professional Analysis</span>
+              </div>
+              <div className="px-4 py-2 bg-blue-600/20 rounded-full border border-blue-500/30">
+                <span className="text-blue-400 font-medium">Real-time Data</span>
+              </div>
+              <div className="px-4 py-2 bg-yellow-600/20 rounded-full border border-yellow-500/30">
+                <span className="text-yellow-400 font-medium">AI Insights</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="py-16 px-4 sm:px-6 lg:px-8">
+      {/* Stats Section */}
+      <div className="py-16 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16 animate-fade-in">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Why Choose Our Analyzer?
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Join thousands of Dota 2 players who have improved their gameplay with our advanced analytics
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div className="text-center animate-fade-in delay-300">
+              <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-300">
+                <span className="text-2xl font-bold text-white">10M+</span>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">Matches Analyzed</h3>
+              <p className="text-gray-400">Comprehensive data from millions of matches</p>
+            </div>
+
+            <div className="text-center animate-fade-in delay-500">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-300">
+                <span className="text-2xl font-bold text-white">500K+</span>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">Active Users</h3>
+              <p className="text-gray-400">Trusted by the Dota 2 community worldwide</p>
+            </div>
+
+            <div className="text-center animate-fade-in delay-700">
+              <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4 hover:scale-110 transition-transform duration-300">
+                <span className="text-2xl font-bold text-white">99.9%</span>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">Accuracy Rate</h3>
+              <p className="text-gray-400">Precise data analysis and insights</p>
+            </div>
+          </div>
+
+          {/* Features Section */}
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 mb-16">
-            <Card className="bg-slate-800/50 border-slate-700 text-white">
+            <Card className="bg-slate-800/50 border-slate-700 text-white hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-red-500/10 animate-fade-in delay-300">
               <CardHeader>
-                <BarChart3 className="h-8 w-8 text-red-400 mb-2" />
-                <CardTitle>Match Statistics</CardTitle>
+                <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center mb-4">
+                  <BarChart3 className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">Advanced Statistics</CardTitle>
                 <CardDescription className="text-gray-400">
-                  Detailed KDA, GPM, XPM, and net worth analysis
+                  Deep dive into KDA, GPM, XPM, net worth, and item progression analysis
                 </CardDescription>
               </CardHeader>
             </Card>
             
-            <Card className="bg-slate-800/50 border-slate-700 text-white">
+            <Card className="bg-slate-800/50 border-slate-700 text-white hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/10 animate-fade-in delay-500">
               <CardHeader>
-                <ChartIcon className="h-8 w-8 text-yellow-400 mb-2" />
-                <CardTitle>Visual Analytics</CardTitle>
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-4">
+                  <ChartIcon className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">Visual Analytics</CardTitle>
                 <CardDescription className="text-gray-400">
-                  Gold graphs, team fights, and ward placement maps
+                  Interactive gold graphs, team fight timelines, and strategic ward placement maps
                 </CardDescription>
               </CardHeader>
             </Card>
             
-            <Card className="bg-slate-800/50 border-slate-700 text-white">
+            <Card className="bg-slate-800/50 border-slate-700 text-white hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-yellow-500/10 animate-fade-in delay-700">
               <CardHeader>
-                <Zap className="h-8 w-8 text-blue-400 mb-2" />
-                <CardTitle>Strategic Insights</CardTitle>
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center mb-4">
+                  <Zap className="h-6 w-6 text-white" />
+                </div>
+                <CardTitle className="text-xl">AI-Powered Insights</CardTitle>
                 <CardDescription className="text-gray-400">
-                  AI-powered suggestions to improve your gameplay
+                  Smart recommendations and gameplay improvements based on match analysis
                 </CardDescription>
               </CardHeader>
             </Card>
           </div>
 
-          {/* Input Section */}
-          <Card className="bg-slate-800/50 border-slate-700 text-white max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-center">Analyze Your Match</CardTitle>
-              <CardDescription className="text-center text-gray-400">
-                Enter your Dota 2 match ID to get comprehensive analysis
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Match ID *
-                </label>
-                <Input
-                  type="text"
-                  placeholder="e.g., 7123456789"
-                  value={matchId}
-                  onChange={(e) => setMatchId(e.target.value)}
-                  className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Steam ID (Optional)
-                </label>
-                <Input
-                  type="text"
-                  placeholder="e.g., 76561198000000000"
-                  value={steamId}
-                  onChange={(e) => setSteamId(e.target.value)}
-                  className="bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
-                />
-              </div>
+          {/* CTA Section */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 to-yellow-600/10 rounded-3xl blur-xl"></div>
+            <Card className="bg-slate-800/70 border-slate-700 text-white max-w-3xl mx-auto relative backdrop-blur-sm animate-fade-in delay-900">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-3xl mb-2 bg-gradient-to-r from-red-400 to-yellow-400 bg-clip-text text-transparent">
+                  Ready to Analyze Your Match?
+                </CardTitle>
+                <CardDescription className="text-gray-300 text-lg">
+                  Enter your Dota 2 match ID and unlock comprehensive insights to improve your gameplay
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-3">
+                      Match ID *
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="e.g., 7123456789"
+                      value={matchId}
+                      onChange={(e) => setMatchId(e.target.value)}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-gray-400 h-12 text-lg focus:border-red-500 transition-colors"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-3">
+                      Steam ID (Optional)
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="e.g., 76561198000000000"
+                      value={steamId}
+                      onChange={(e) => setSteamId(e.target.value)}
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-gray-400 h-12 text-lg focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+                </div>
 
-              <Button
-                onClick={handleAnalyze}
-                disabled={!matchId.trim() || isAnalyzing}
-                className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-semibold"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Analyzing Match...
-                  </>
-                ) : (
-                  <>
-                    <SearchIcon className="h-4 w-4 mr-2" />
-                    Analyze Match
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
+                <Button
+                  onClick={handleAnalyze}
+                  disabled={!matchId.trim() || isAnalyzing}
+                  className="w-full bg-gradient-to-r from-red-600 via-red-500 to-yellow-500 hover:from-red-700 hover:via-red-600 hover:to-yellow-600 text-white font-semibold h-14 text-lg hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                      Analyzing Match...
+                    </>
+                  ) : (
+                    <>
+                      <SearchIcon className="h-5 w-5 mr-3" />
+                      Analyze Match Now
+                    </>
+                  )}
+                </Button>
+                
+                <p className="text-center text-sm text-gray-400">
+                  Get your match ID from{" "}
+                  <span className="text-red-400 font-medium">Dota 2</span> or{" "}
+                  <span className="text-blue-400 font-medium">OpenDota</span>
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-slate-700 bg-slate-900/50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-gray-400">
+              Built for the Dota 2 community with ❤️ | Powered by advanced analytics
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-// Custom Chart Icon component since chart-line isn't in our allowed icons
+// Custom Chart Icon component
 const ChartIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
   </svg>
 );
 
