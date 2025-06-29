@@ -136,6 +136,28 @@ const Index = () => {
       <div className="relative min-h-[600px] flex items-center">
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-transparent"></div>
         
+        {/* Phantom Assassin Image */}
+        <div className="absolute left-0 top-1/2 w-[600px] h-[600px] pointer-events-none z-20 animate-float-reverse">
+          <img 
+            src="/PhantomHero.png" 
+            alt="Phantom Assassin" 
+            className="w-full h-full object-contain animate-phantom-pulse"
+          />
+          {/* Glow Effect */}
+          <div className="absolute inset-0 bg-gradient-to-l from-transparent to-cyan-500/20 blur-3xl -z-10 animate-pulse"></div>
+        </div>
+
+        {/* Lina Image */}
+        <div className="absolute right-0 top-1/2 w-[600px] h-[600px] pointer-events-none z-20 animate-float">
+          <img 
+            src="/lina.png" 
+            alt="Lina" 
+            className="w-full h-full object-contain animate-flame-pulse"
+          />
+          {/* Glow Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-orange-500/20 blur-3xl -z-10 animate-pulse"></div>
+        </div>
+        
         <div className="relative px-4 py-20 sm:px-6 lg:px-8 z-10 w-full">
           <div className="text-center animate-fade-in max-w-4xl mx-auto">
             <div className="mb-8">
