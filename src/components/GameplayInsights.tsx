@@ -323,10 +323,7 @@ const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) =>
                               <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
                                 <div 
                                   className={`h-full ${colors.progress} rounded-full transition-all duration-1000 ease-out group-hover:animate-pulse`}
-                                  style={{ 
-                                    width: `${metric.score}%`,
-                                    animation: 'progressFill 2s ease-out'
-                                  }}
+                                  style={{ width: `${metric.score}%` }}
                                 ></div>
                               </div>
                             </div>
@@ -416,17 +413,6 @@ const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) =>
           </CardContent>
         </Card>
       </div>
-
-      <style jsx>{`
-        @keyframes progressFill {
-          from {
-            width: 0%;
-          }
-          to {
-            width: var(--final-width);
-          }
-        }
-      `}</style>
     </TooltipProvider>
   );
 };
