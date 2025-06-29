@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SearchIcon, BarChart3, Users, Zap, Shield, Sword, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,53 +33,43 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-red-600/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-48 h-48 bg-blue-600/10 rounded-full blur-2xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-20 left-1/3 w-56 h-56 bg-yellow-600/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      {/* Main Background */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: 'url(/Panthom.jpg)' }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/90 to-slate-900"></div>
       </div>
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-red-600/30 to-yellow-600/20"></div>
+      <div className="relative min-h-[600px] flex items-center">
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-transparent"></div>
         
-        {/* Floating Icons */}
-        <div className="absolute top-20 left-20 animate-bounce delay-1000">
-          <Shield className="h-8 w-8 text-blue-400/60" />
-        </div>
-        <div className="absolute top-32 right-32 animate-bounce delay-2000">
-          <Sword className="h-10 w-10 text-red-400/60" />
-        </div>
-        <div className="absolute bottom-40 left-40 animate-bounce delay-500">
-          <Target className="h-6 w-6 text-yellow-400/60" />
-        </div>
-
-        <div className="relative px-4 py-20 sm:px-6 lg:px-8">
-          <div className="text-center animate-fade-in">
+        <div className="relative px-4 py-20 sm:px-6 lg:px-8 z-10 w-full">
+          <div className="text-center animate-fade-in max-w-4xl mx-auto">
             <div className="mb-8">
               <h1 className="text-5xl font-bold tracking-tight text-white sm:text-7xl mb-4 animate-scale-in">
                 Dota 2 Match
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-yellow-400 to-red-500 animate-pulse">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-yellow-400 to-red-500">
                   {" "}Analyzer
                 </span>
               </h1>
-              <div className="w-32 h-1 bg-gradient-to-r from-red-500 to-yellow-500 mx-auto mb-6 animate-scale-in delay-300"></div>
+              <div className="w-32 h-1 bg-gradient-to-r from-red-500 to-yellow-500 mx-auto mb-6"></div>
             </div>
             
-            <p className="mt-6 text-xl leading-8 text-gray-300 max-w-3xl mx-auto animate-fade-in delay-500">
+            <p className="mt-6 text-xl leading-8 text-gray-300 max-w-3xl mx-auto">
               Unlock the secrets of your gameplay with our comprehensive match analysis tool. 
               Get detailed statistics, visualizations, and AI-powered insights to dominate the Ancient.
             </p>
             
-            <div className="mt-8 flex justify-center space-x-4 animate-fade-in delay-700">
-              <div className="px-4 py-2 bg-red-600/20 rounded-full border border-red-500/30">
+            <div className="mt-8 flex justify-center space-x-4">
+              <div className="px-4 py-2 bg-red-600/20 rounded-full border border-red-500/30 backdrop-blur-sm">
                 <span className="text-red-400 font-medium">Professional Analysis</span>
               </div>
-              <div className="px-4 py-2 bg-blue-600/20 rounded-full border border-blue-500/30">
+              <div className="px-4 py-2 bg-blue-600/20 rounded-full border border-blue-500/30 backdrop-blur-sm">
                 <span className="text-blue-400 font-medium">Real-time Data</span>
               </div>
-              <div className="px-4 py-2 bg-yellow-600/20 rounded-full border border-yellow-500/30">
+              <div className="px-4 py-2 bg-yellow-600/20 rounded-full border border-yellow-500/30 backdrop-blur-sm">
                 <span className="text-yellow-400 font-medium">AI Insights</span>
               </div>
             </div>
@@ -88,9 +77,16 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Stats Section */}
+      {/* Stats Section with Shadow Fiend Background */}
       <div className="py-16 px-4 sm:px-6 lg:px-8 relative">
-        <div className="max-w-7xl mx-auto">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
+          style={{ backgroundImage: 'url(/shadow.jpg)' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/90 to-transparent"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-3xl font-bold text-white mb-4">
               Why Choose Our Analyzer?
