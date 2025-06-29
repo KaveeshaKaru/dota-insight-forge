@@ -28,7 +28,7 @@ const MatchAnalysis: React.FC<MatchAnalysisProps> = ({ matchId, steamId, onBack 
           playsInline
           className="absolute min-w-full min-h-full object-cover"
         >
-          <source src="/Spectre looped.mp4" type="video/mp4" />
+          <source src="/SpectreLooped.mp4" type="video/mp4" />
         </video>
         {/* Overlay with gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-blue-900/90 to-slate-800/95"></div>
