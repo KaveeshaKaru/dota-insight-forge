@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SearchIcon, BarChart3, Users, Zap, Shield, Sword, Target } from 'lucide-react';
+import { SearchIcon, BarChart3, Users, Zap, Shield, Sword, Target, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ const Index = () => {
   const [steamId, setSteamId] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleAnalyze = async () => {
     if (!matchId.trim()) return;
@@ -40,6 +41,96 @@ const Index = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/90 to-slate-900"></div>
       </div>
+
+      {/* Gaming Header */}
+      <header className="relative z-50">
+        <nav className="border-b border-slate-700/50 backdrop-blur-md bg-slate-900/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <div className="flex-shrink-0 flex items-center">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-yellow-500 rounded-lg flex items-center justify-center transform rotate-45">
+                    <div className="w-6 h-6 bg-slate-900 rounded-md flex items-center justify-center transform -rotate-45">
+                      <Sword className="w-4 h-4 text-red-500" />
+                    </div>
+                  </div>
+                  <span className="text-xl font-bold text-white tracking-wider">
+                    DOTA<span className="text-red-500">INSIGHT</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center space-x-8">
+                <a href="#features" className="text-gray-300 hover:text-white hover:bg-slate-700/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                  Features
+                </a>
+                <a href="#stats" className="text-gray-300 hover:text-white hover:bg-slate-700/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                  Stats
+                </a>
+                <a href="#about" className="text-gray-300 hover:text-white hover:bg-slate-700/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                  About
+                </a>
+                <Button 
+                  variant="ghost"
+                  className="bg-gradient-to-r from-red-500 to-yellow-500 text-white hover:from-red-600 hover:to-yellow-600 border-none"
+                >
+                  Connect Steam
+                </Button>
+              </div>
+
+              {/* Mobile menu button */}
+              <div className="md:hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="text-gray-300 hover:text-white"
+                >
+                  {isMobileMenuOpen ? (
+                    <X className="h-6 w-6" />
+                  ) : (
+                    <Menu className="h-6 w-6" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Navigation */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden bg-slate-800/95 backdrop-blur-md border-t border-slate-700/50">
+              <div className="px-2 pt-2 pb-3 space-y-1">
+                <a
+                  href="#features"
+                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700/50 transition-colors"
+                >
+                  Features
+                </a>
+                <a
+                  href="#stats"
+                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700/50 transition-colors"
+                >
+                  Stats
+                </a>
+                <a
+                  href="#about"
+                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700/50 transition-colors"
+                >
+                  About
+                </a>
+                <Button 
+                  variant="ghost"
+                  className="w-full bg-gradient-to-r from-red-500 to-yellow-500 text-white hover:from-red-600 hover:to-yellow-600 border-none mt-2"
+                >
+                  Connect Steam
+                </Button>
+              </div>
+            </div>
+          )}
+        </nav>
+      </header>
 
       {/* Hero Section */}
       <div className="relative min-h-[600px] flex items-center">
