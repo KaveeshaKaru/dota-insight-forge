@@ -50,16 +50,17 @@ const MatchAnalysis: React.FC<MatchAnalysisProps> = ({ matchId, steamId, onBack 
       </div>
 
       {/* Content */}
-      <div className="relative z-10 py-6">
-        {/* Centered content container */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 p-4 sm:p-6 lg:p-8">
+        <div className="max-w-screen-2xl mx-auto">
           <div className="mb-8">
             <Button onClick={onBack} variant="ghost" className="text-gray-300 hover:text-white mb-4 backdrop-blur-sm">
               <ArrowLeftIcon className="h-4 w-4 mr-2" />
               Back to Search
             </Button>
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-white mb-2">Match Analysis</h1>
+              <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl mb-2">
+              Match Analysis
+              </h1>
               <p className="text-gray-400">Match ID: {matchId}</p>
             </div>
           </div>

@@ -45,6 +45,46 @@ const calculateFarmingScore = (gpm: number): number => { if (gpm >= 700) return 
 const calculateTeamfightScore = (player: any, teamTotalKills: number): number => { if (teamTotalKills === 0) return 50; const participation = ((player.kills || 0) + (player.assists || 0)) / teamTotalKills; const kda = ((player.kills || 0) + (player.assists || 0)) / (player.deaths || 1); const participationScore = Math.min(participation * 100, 100); const kdaScore = Math.min((kda / 5) * 100, 100); return Math.round((participationScore * 0.6) + (kdaScore * 0.4)); };
 const calculateVisionScore = (wardsPlaced: number, durationMinutes: number): number => { if (durationMinutes === 0) return 0; const wardsPer10Min = (wardsPlaced / durationMinutes) * 10; if (wardsPer10Min >= 7) return 90; if (wardsPer10Min >= 5) return 75; if (wardsPer10Min >= 3) return 60; if (wardsPer10Min >= 1) return 40; return 20; };
 
+// Helper functions for styling
+const getSeverityColor = (severity: string) => {
+  switch (severity.toLowerCase()) {
+    case 'high':
+      return 'bg-red-500/20 border-red-500 text-red-300';
+    case 'medium':
+      return 'bg-yellow-500/20 border-yellow-500 text-yellow-300';
+    case 'low':
+      return 'bg-green-500/20 border-green-500 text-green-300';
+    default:
+      return 'bg-gray-500/20 border-gray-500 text-gray-300';
+  }
+};
+
+const getSeverityBadgeColor = (severity: string) => {
+  switch (severity.toLowerCase()) {
+    case 'high':
+      return 'bg-red-600 hover:bg-red-700';
+    case 'medium':
+      return 'bg-yellow-600 hover:bg-yellow-700';
+    case 'low':
+      return 'bg-green-600 hover:bg-green-700';
+    default:
+      return 'bg-gray-600 hover:bg-gray-700';
+  }
+};
+
+const getTypeColor = (type: string) => {
+  switch (type) {
+    case 'strength':
+      return 'text-green-400';
+    case 'weakness':
+      return 'text-red-400';
+    case 'opportunity':
+      return 'text-blue-400';
+    default:
+      return 'text-gray-400';
+  }
+};
+
 const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) => {
   // State for AI-driven analysis
   const [aiAnalysis, setAiAnalysis] = useState<AiAnalysis | null>(null);
@@ -137,8 +177,6 @@ const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) =>
   }, [data]);
 
   const getColorClasses = (color: string) => { switch (color) { case 'green': return { bg: 'bg-green-900/30', text: 'text-green-400', textSecondary: 'text-green-300', progress: 'bg-green-500', border: 'border-green-500/30' }; case 'yellow': return { bg: 'bg-yellow-900/30', text: 'text-yellow-400', textSecondary: 'text-yellow-300', progress: 'bg-yellow-500', border: 'border-yellow-500/30' }; case 'red': return { bg: 'bg-red-900/30', text: 'text-red-400', textSecondary: 'text-red-300', progress: 'bg-red-500', border: 'border-red-500/30' }; case 'blue': return { bg: 'bg-blue-900/30', text: 'text-blue-400', textSecondary: 'text-blue-300', progress: 'bg-blue-500', border: 'border-blue-500/30' }; default: return { bg: 'bg-gray-900/30', text: 'text-gray-400', textSecondary: 'text-gray-300', progress: 'bg-gray-500', border: 'border-gray-500/30' }; } };
-  const getSeverityColor = (severity: string) => { switch (severity) { case 'high': return 'bg-red-600'; case 'medium': return 'bg-yellow-600'; case 'low': return 'bg-green-600'; default: return 'bg-gray-600'; } };
-  const getTypeColor = (type: string) => { switch (type) { case 'warning': return 'text-red-400'; case 'improvement': return 'text-yellow-400'; case 'vision': return 'text-blue-400'; case 'objective': return 'text-green-400'; case 'farming': return 'text-orange-400'; case 'itemization': return 'text-purple-400'; case 'positioning': return 'text-pink-400'; case 'timing': return 'text-cyan-400'; case 'aggression': return 'text-red-300'; case 'macro': return 'text-indigo-400'; case 'laning': return 'text-lime-400'; case 'resources': return 'text-amber-400'; default: return 'text-gray-400'; } };
 
   return (
     <TooltipProvider>
@@ -156,10 +194,16 @@ const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) =>
                 {aiAnalysis.insights.map((insight, index) => {
                 const IconComponent = insight.icon;
                 return (
-                    <div key={index} className="bg-slate-700/50 rounded-lg p-4 space-y-3">
-                      <div className="flex items-start justify-between"><div className="flex items-center space-x-2"><IconComponent className={`h-5 w-5 ${getTypeColor(insight.type)}`} /><h4 className="font-semibold text-white">{insight.title}</h4></div><Badge className={`${getSeverityColor(insight.severity)} text-white text-xs`}>{insight.severity.toUpperCase()}</Badge></div>
-                      <p className="text-gray-300 text-sm">{insight.description}</p>
-                      <div className="bg-slate-600/50 rounded p-3"><p className="text-sm font-medium text-blue-300 mb-1">🤖 AI Suggestion:</p><p className="text-sm text-gray-200">{insight.suggestion}</p></div>
+                    <div key={index} className={`bg-slate-800/60 rounded-lg p-4 space-y-3 border-l-4 ${getSeverityColor(insight.severity)}`}>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-3">
+                          <IconComponent className={`h-5 w-5`} />
+                          <h4 className="font-semibold text-white">{insight.title}</h4>
+                        </div>
+                        <Badge className={`${getSeverityBadgeColor(insight.severity)} text-white text-xs`}>{insight.severity.toUpperCase()}</Badge>
+                      </div>
+                      <p className="text-gray-300 text-sm pl-8">{insight.description}</p>
+                      <div className="bg-slate-700/50 rounded p-3 ml-8"><p className="text-sm font-medium text-blue-300 mb-1">🤖 AI Suggestion:</p><p className="text-sm text-gray-200">{insight.suggestion}</p></div>
                   </div>
                 );
               })}
