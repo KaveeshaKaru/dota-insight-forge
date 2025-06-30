@@ -26,9 +26,18 @@ const MatchOverview: React.FC<MatchOverviewProps> = ({ data }) => {
 
   // Calculate tower and roshan kills from objectives if available
   // Radiant team is 2, Dire team is 3 in OpenDota objectives
-  const radiantTowers = data?.objectives?.filter((obj: any) => obj.type === 'tower_kill' && obj.team === 2).length ?? 0;
-  const direTowers = data?.objectives?.filter((obj: any) => obj.type === 'tower_kill' && obj.team === 3).length ?? 0;
+  const radiantTowersKilled =
+    Array.isArray(data?.objectives)
+      ? data.objectives.filter(obj => obj.type === 'tower_kill' && obj.team === 2).length
+      : 0;
+
+  const direTowersKilled =
+    Array.isArray(data?.objectives)
+      ? data.objectives.filter(obj => obj.type === 'tower_kill' && obj.team === 3).length
+      : 0;
   const roshanKills = data?.objectives?.filter((obj: any) => obj.type === 'CHAT_MESSAGE_ROSHAN_KILL').length ?? 0;
+  
+  const towerDisplay = `${radiantTowersKilled} (R) / ${direTowersKilled} (D)`;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -38,11 +47,11 @@ const MatchOverview: React.FC<MatchOverviewProps> = ({ data }) => {
           <CardTitle className="flex items-center justify-between">
             Match Result
             {data?.radiant_win !== undefined && (
-                <Badge 
+              <Badge
                 className={`${data.radiant_win ? 'bg-green-600' : 'bg-red-600'} text-white`}
-                >
+              >
                 {data.radiant_win ? 'Radiant Victory' : 'Dire Victory'}
-                </Badge>
+              </Badge>
             )}
           </CardTitle>
         </CardHeader>
@@ -98,10 +107,10 @@ const MatchOverview: React.FC<MatchOverviewProps> = ({ data }) => {
               <span className="text-gray-400">First Blood:</span>
               <span className="font-semibold">{formatDuration(data?.first_blood_time)}</span>
             </div>
-            <div className="flex justify-between">
+            {/* <div className="flex justify-between">
               <span className="text-gray-400">Towers Destroyed:</span>
-              <span className="font-semibold">{`${radiantTowers} (R) / ${direTowers} (D)`}</span>
-            </div>
+              <span className="font-semibold">{towerDisplay}</span>
+            </div> */}
             <div className="flex justify-between">
               <span className="text-gray-400">Roshan Kills:</span>
               <span className="font-semibold">{roshanKills}</span>

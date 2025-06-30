@@ -41,11 +41,30 @@ interface HeroData {
 interface ItemData {
   id: number;
   dname: string;
-  img: string;
+  qual?: string;
+  cost?: number;
+  behavior?: string | string[];
+  desc?: string;
+  notes?: string;
+  attrib?: {
+    key: string;
+    header?: string;
+    value: string | string[];
+    display?: string;
+    footer?: string;
+  }[];
+  mc?: number | boolean;
+  cd?: number | boolean;
+  lore?: string;
+  components?: string[] | null;
+  created?: boolean;
+  img?: string;
+  abilities?: { type: string; title: string; description: string }[];
 }
 
 type HeroDataMap = { [key: number]: HeroData };
-type ItemDataMap = { [key: number]: ItemData };
+type ItemDataMapById = { [key: number]: ItemData };
+type ItemDataMapByName = { [key: string]: ItemData };
 
 interface PlayerStatsProps {
   players: ApiPlayer[];
@@ -53,17 +72,20 @@ interface PlayerStatsProps {
 
 const PlayerStats: React.FC<PlayerStatsProps> = ({ players }) => {
   const [heroDataMap, setHeroDataMap] = useState<HeroDataMap | null>(null);
-  const [itemDataMap, setItemDataMap] = useState<ItemDataMap | null>(null);
+  const [itemMapById, setItemMapById] = useState<ItemDataMapById | null>(null);
+  const [itemMapByName, setItemMapByName] = useState<ItemDataMapByName | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [heroes, items] = await Promise.all([
+        const [heroes, itemsById, itemsByName] = await Promise.all([
           heroService.getHeroMap(),
-          itemService.getItemMap()
+          itemService.getItemMapById(),
+          itemService.getItemMapByName()
         ]);
         setHeroDataMap(heroes);
-        setItemDataMap(items);
+        setItemMapById(itemsById);
+        setItemMapByName(itemsByName);
       } catch (error) {
         console.error("Could not fetch constant data for PlayerStats:", error);
       }
@@ -71,7 +93,7 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({ players }) => {
     fetchData();
   }, []);
 
-  if (!Array.isArray(players) || !heroDataMap || !itemDataMap) {
+  if (!Array.isArray(players) || !heroDataMap || !itemMapById || !itemMapByName) {
     return <Card className="bg-slate-800/50 border-slate-700 text-white p-4 text-center max-w-7xl mx-auto"><p>Loading Player Stats...</p></Card>;
   }
 
@@ -119,20 +141,64 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({ players }) => {
           <h5 className="text-sm font-semibold text-gray-300 mb-2">Items:</h5>
           <div className="grid grid-cols-6 gap-2">
             {items.map((itemId) => {
-              const item = itemDataMap[itemId];
-              const itemImageUrl = item ? `https://cdn.dota2.com${item.img}` : '';
+              const item = itemMapById[itemId];
+              const itemImageUrl = item?.img ? `https://cdn.dota2.com${item.img}` : '';
+              const components = item?.components?.map(name => itemMapByName[name]).filter(Boolean) || [];
+
               return (
-                <Tooltip key={itemId}>
+                <Tooltip key={itemId} delayDuration={100}>
                   <TooltipTrigger asChild>
-                    <div className="aspect-square bg-slate-600 rounded border border-slate-500 overflow-hidden">
-                      {item ? (
-                        <img src={itemImageUrl} alt={item.dname} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">{itemId}</div>
-                      )}
+                    <div className="aspect-square bg-slate-600 rounded border border-slate-500 overflow-hidden hover:border-yellow-400 transition-colors">
+                      {item ? (<img src={itemImageUrl} alt={item.dname} className="w-full h-full object-cover" />) : (<div className="w-full h-full" />)}
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent><p>{item ? item.dname : `Item ID: ${itemId}`}</p></TooltipContent>
+                  {item && (
+                    <TooltipContent className="bg-[#0e1625] border-[#1c2a40] text-gray-200 p-0 max-w-sm" side="top" align="center">
+                      <div className="flex flex-col">
+                        <div className="bg-gradient-to-r from-blue-900/40 to-purple-900/40 p-3 flex items-center space-x-3">
+                          <img src={itemImageUrl} alt={item.dname} className="w-16 h-12 object-contain" />
+                          <div>
+                            <h3 className="text-lg font-bold">{item.dname}</h3>
+                            <div className="flex items-center space-x-2 text-yellow-400">
+                              <img src="https://cdn.dota2.com/apps/dota2/images/tooltips/gold.png" alt="gold" className="w-5 h-5" />
+                              <span>{item.cost}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-3 space-y-3">
+                          <div className="space-y-1 border-b border-slate-700 pb-3 mb-3">
+                            {item.behavior && <p className="text-xs text-gray-400">ABILITY: {Array.isArray(item.behavior) ? item.behavior.join(', ') : item.behavior}</p>}
+                            {item.attrib?.filter(attr => attr.display).map(attr => (<p key={attr.key} className="text-sm text-gray-300" dangerouslySetInnerHTML={{ __html: attr.display!.replace('{value}', attr.value as string) }} />))}
+                          </div>
+
+                          {item.abilities?.map((ability, index) => (
+                            <div key={index} className="bg-slate-800/60 p-3 rounded-md space-y-2">
+                              <div className="flex justify-between items-center"><h4 className="font-semibold text-white">{ability.title}</h4><div className="flex items-center space-x-3 text-sm">
+                                {typeof item.mc === 'number' && item.mc > 0 && <div className="flex items-center space-x-1"><div className="w-4 h-4 bg-blue-500 rounded-sm border border-blue-300" /><span className="text-blue-300">{item.mc}</span></div>}
+                                {typeof item.cd === 'number' && item.cd > 0 && <div className="flex items-center space-x-1"><div className="w-4 h-4 bg-slate-600 rounded-sm border border-slate-400" /><span className="text-gray-300">{item.cd}</span></div>}
+                              </div></div>
+                              <p className="text-sm text-gray-300 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: ability.description.replace(/\\n/g, "<br />").replace(/%%/g, "%") }} />
+                            </div>
+                          ))}
+
+                          {item.notes && <div className="bg-slate-800/60 p-3 rounded-md"><p className="text-xs text-gray-400">{item.notes}</p></div>}
+                          {item.lore && <p className="text-xs text-gray-500 italic pt-2">{item.lore}</p>}
+
+                          {components.length > 0 && (
+                            <div className="border-t border-slate-700 pt-3 mt-3">
+                              <h4 className="text-xs text-gray-400 mb-2">Components:</h4>
+                              <div className="flex space-x-2">
+                                {components.map(comp => (
+                                  <img key={comp.id} src={`https://cdn.dota2.com${comp.img}`} title={comp.dname} className="w-10 h-8 object-contain bg-slate-800 rounded" />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  )}
                 </Tooltip>
               );
             })}

@@ -43,9 +43,10 @@ const MatchAnalysis: React.FC<MatchAnalysisProps> = ({ matchId, steamId, onBack 
       {/* Video Background */}
       <div className="fixed inset-0 w-full h-full z-0">
         <video autoPlay loop muted playsInline className="absolute min-w-full min-h-full object-cover">
-          <source src="/Spectre looped.mp4" type="video/mp4" />
+          <source src="/SpectreLooped.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-blue-900/90 to-slate-800/95"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-blue-900/60 to-slate-800/70"></div>
+
       </div>
 
       {/* Content */}
