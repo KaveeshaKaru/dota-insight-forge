@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { X, Swords, Shield, Plus, Loader2, BarChart, BrainCircuit } from 'lucide-react';
+import { X, Swords, Shield, Plus, Loader2, BarChart, BrainCircuit, Ban } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -46,6 +46,7 @@ const CounterPicker: React.FC = () => {
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedSuggestion, setSelectedSuggestion] = useState<any | null>(null);
+  const [bannedSuggestionIds, setBannedSuggestionIds] = useState<Set<number>>(new Set());
   const GEMINI_API_KEY = 'AIzaSyCQoymIaFGlrTFhuTyRsGVLePoOlnxTM-s';
 
   useEffect(() => {
@@ -101,10 +102,13 @@ const CounterPicker: React.FC = () => {
     setSelectedSuggestion(null);
   };
 
+  const handleBanSuggestion = (heroId: number) => {
+    setBannedSuggestionIds(prev => new Set(prev).add(heroId));
+  };
+
   const handleSuggestHeroes = async () => {
     setIsSuggesting(true);
     setError(null);
-    setSuggestions([]);
 
     const allies = alliedHeroes.filter(Boolean).map(h => h.localized_name);
     const enemies = enemyHeroes.filter(Boolean).map(h => h.localized_name);
@@ -120,7 +124,13 @@ const CounterPicker: React.FC = () => {
       return;
     }
 
-    const unpickedHeroes = allHeroes.filter(h => !pickedHeroIds.has(h.id)).map(h => h.localized_name);
+    const bannedHeroes = Array.from(bannedSuggestionIds)
+      .map(id => allHeroes.find(h => h.id === id)?.localized_name)
+      .filter(Boolean);
+
+    const unpickedHeroes = allHeroes
+      .filter(h => !pickedHeroIds.has(h.id) && !bannedSuggestionIds.has(h.id))
+      .map(h => h.localized_name);
 
     const prompt = `
       **Dota 2 Counter Picker Assistant**
@@ -130,6 +140,7 @@ const CounterPicker: React.FC = () => {
       - Role to Fill: ${role}
       - Your Team (Allies): ${allies.join(', ') || 'None'}
       - Enemy Team: ${enemies.join(', ')}
+      - Banned Heroes: ${bannedHeroes.join(', ') || 'None'}
       - Available Heroes: ${unpickedHeroes.join(', ')}
       **Task:** Return a JSON array of the top 5 hero suggestions. For each hero, provide:
       1.  "heroName": The name of the suggested hero.
@@ -137,9 +148,18 @@ const CounterPicker: React.FC = () => {
       3.  "counterStrategy": A brief explanation of why this hero counters the enemy team.
       4.  "synergyStrategy": A brief explanation of how this hero synergizes with the allied team.
       5.  "roles": An array of strings for the hero's primary roles (e.g., "Carry", "Support").
-      **Output Format:** Your response MUST be a valid JSON array string. Do not include any other text.
+      **Output Format:** Your response MUST be a valid JSON array string inside a \`\`\`json code block. Do not include any other text before or after the code block.
+      **Example of a single hero entry in the array:**
+      {
+        "heroName": "Silencer",
+        "advantageScore": 85,
+        "counterStrategy": "Global Silence interrupts key enemy spells. Arcane Curse punishes spell-heavy lineups.",
+        "synergyStrategy": "Global Silence sets up teamfights for allies like Axe or Magnus to initiate.",
+        "roles": ["Support", "Disabler"]
+      }
     `;
 
+    let text = '';
     try {
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
         method: 'POST',
@@ -159,8 +179,19 @@ const CounterPicker: React.FC = () => {
       }
       
       const data = await response.json();
-      const text = data.candidates[0].content.parts[0].text;
-      const parsedSuggestions = JSON.parse(text.match(/(\[.*\])/s)[0]);
+      
+      if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        throw new Error("AI returned an empty response.");
+      }
+      
+      text = data.candidates[0].content.parts[0].text;
+      
+      const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```|(\[[\s\S]*\])/);
+      if (!jsonMatch) {
+          throw new Error("Could not find a JSON block in the AI's response.");
+      }
+      const jsonString = jsonMatch[1] || jsonMatch[2];
+      const parsedSuggestions = JSON.parse(jsonString);
       
       const enrichedSuggestions = parsedSuggestions.map((suggestion: any) => {
         const heroData = heroNameMap[suggestion.heroName.toLowerCase()];
@@ -170,7 +201,10 @@ const CounterPicker: React.FC = () => {
       setSuggestions(enrichedSuggestions);
     } catch (e: any) {
       console.error("Failed to get suggestions:", e);
-      setError(`Failed to get AI suggestions. ${e.message}`);
+      if (text) {
+        console.error("Raw text that failed parsing:", text);
+      }
+      setError(`Failed to process AI suggestions. ${e.message}`);
     } finally {
       setIsSuggesting(false);
     }
@@ -233,6 +267,8 @@ const CounterPicker: React.FC = () => {
             isLoading={isSuggesting} 
             error={error}
             onSuggestionClick={setSelectedSuggestion}
+            onBanSuggestion={handleBanSuggestion}
+            bannedSuggestionIds={bannedSuggestionIds}
           />
 
           <AlertDialog open={!!selectedSuggestion} onOpenChange={() => setSelectedSuggestion(null)}>
@@ -288,7 +324,7 @@ const CounterPickerFilters = ({ rank, setRank, role, setRole }) => (
   </Card>
 );
 
-const SuggestionResults = ({ suggestions, isLoading, error, onSuggestionClick }) => {
+const SuggestionResults = ({ suggestions, isLoading, error, onSuggestionClick, onBanSuggestion, bannedSuggestionIds }) => {
   if (isLoading) {
     return (
       <div className="mt-8 text-center">
@@ -327,7 +363,13 @@ const SuggestionResults = ({ suggestions, isLoading, error, onSuggestionClick })
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {suggestions.map((s, i) => (
-            <SuggestionCard key={i} suggestion={s} onSuggestionClick={onSuggestionClick} />
+            <SuggestionCard 
+              key={i} 
+              suggestion={s} 
+              onSuggestionClick={onSuggestionClick} 
+              onBanSuggestion={onBanSuggestion}
+              isBanned={bannedSuggestionIds.has(s.id)}
+            />
           ))}
         </CardContent>
       </Card>
@@ -335,37 +377,59 @@ const SuggestionResults = ({ suggestions, isLoading, error, onSuggestionClick })
   );
 };
 
-const SuggestionCard = ({ suggestion, onSuggestionClick }) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <div onClick={() => onSuggestionClick(suggestion)} className="bg-gray-700/50 rounded-lg p-4 space-y-3 border-l-4 border-blue-500 hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-md">
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-12 w-12 rounded-lg border-2 border-gray-600">
-            <AvatarImage src={getHeroImageUrl(suggestion)} />
-            <AvatarFallback className="bg-gray-600 text-white">{suggestion.heroName.substring(0, 2)}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h4 className="font-semibold text-white text-lg">{suggestion.heroName}</h4>
-            <div className="flex items-center text-sm text-green-400 font-bold">
-              <BarChart className="h-4 w-4 mr-1" />
-              {suggestion.advantageScore}%
+const SuggestionCard = ({ suggestion, onSuggestionClick, onBanSuggestion, isBanned }) => {
+  const cardClasses = `relative bg-gray-700/50 rounded-lg p-4 space-y-3 border-l-4 border-blue-500 transition-all duration-300 shadow-md ${
+    isBanned 
+      ? 'opacity-50 grayscale cursor-not-allowed' 
+      : 'hover:bg-gray-700 transform hover:scale-105 cursor-pointer'
+  }`;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div onClick={() => !isBanned && onSuggestionClick(suggestion)} className={cardClasses}>
+          <div className="flex items-start justify-between">
+            <div className="flex items-center space-x-3">
+              <Avatar className="h-12 w-12 rounded-lg border-2 border-gray-600">
+                <AvatarImage src={getHeroImageUrl(suggestion)} />
+                <AvatarFallback className="bg-gray-600 text-white">{suggestion.heroName.substring(0, 2)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h4 className="font-semibold text-white text-lg">{suggestion.heroName}</h4>
+                <div className="flex items-center text-sm text-green-400 font-bold">
+                  <BarChart className="h-4 w-4 mr-1" />
+                  {suggestion.advantageScore}%
+                </div>
+              </div>
             </div>
+            {!isBanned && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onBanSuggestion(suggestion.id);
+                }}
+                className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-600/50"
+                title="Ban this suggestion"
+              >
+                <Ban className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <div className="text-xs text-gray-300">
+            {suggestion.roles.join(', ')}
           </div>
         </div>
-        <div className="text-xs text-gray-300">
-          {suggestion.roles.join(', ')}
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs bg-gray-800 border-gray-700 text-white p-4 rounded-lg shadow-lg">
+        <div className="space-y-2">
+          <div className="font-bold text-lg">{suggestion.heroName}</div>
+          <div><strong className="text-red-400">Counters:</strong> {suggestion.counterStrategy}</div>
+          <div><strong className="text-blue-400">Synergy:</strong> {suggestion.synergyStrategy}</div>
         </div>
-      </div>
-    </TooltipTrigger>
-    <TooltipContent className="max-w-xs bg-gray-800 border-gray-700 text-white p-4 rounded-lg shadow-lg">
-      <div className="space-y-2">
-        <div className="font-bold text-lg">{suggestion.heroName}</div>
-        <div><strong className="text-red-400">Counters:</strong> {suggestion.counterStrategy}</div>
-        <div><strong className="text-blue-400">Synergy:</strong> {suggestion.synergyStrategy}</div>
-      </div>
-    </TooltipContent>
-  </Tooltip>
-);
+      </TooltipContent>
+    </Tooltip>
+  );
+};
 
 interface TeamSectionProps {
   title: string;
