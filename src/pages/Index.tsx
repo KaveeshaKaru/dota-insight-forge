@@ -14,7 +14,7 @@ const Index = () => {
 
   const handleAnalyze = async () => {
     if (!matchId.trim()) return;
-    
+
     setIsAnalyzing(true);
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -35,7 +35,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden">
       {/* Main Background */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: 'url(/Panthom.jpg)' }}
       >
@@ -72,7 +72,7 @@ const Index = () => {
                 <a href="#about" className="text-gray-300 hover:text-white hover:bg-slate-700/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                   About
                 </a>
-                <Button 
+                <Button
                   variant="ghost"
                   className="bg-gradient-to-r from-red-500 to-yellow-500 text-white hover:from-red-600 hover:to-yellow-600 border-none"
                 >
@@ -120,7 +120,7 @@ const Index = () => {
                 >
                   About
                 </a>
-                <Button 
+                <Button
                   variant="ghost"
                   className="w-full bg-gradient-to-r from-red-500 to-yellow-500 text-white hover:from-red-600 hover:to-yellow-600 border-none mt-2"
                 >
@@ -135,12 +135,12 @@ const Index = () => {
       {/* Hero Section */}
       <div className="relative min-h-[600px] flex items-center">
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-transparent"></div>
-        
+
         {/* Phantom Assassin Image */}
         <div className="absolute left-0 top-1/2 w-[600px] h-[600px] pointer-events-none z-20 animate-float-reverse">
-          <img 
-            src="/PhantomHero.png" 
-            alt="Phantom Assassin" 
+          <img
+            src="/PhantomHero.png"
+            alt="Phantom Assassin"
             className="w-full h-full object-contain animate-phantom-pulse"
           />
           {/* Glow Effect */}
@@ -149,15 +149,15 @@ const Index = () => {
 
         {/* Lina Image */}
         <div className="absolute right-0 top-1/2 w-[600px] h-[600px] pointer-events-none z-20 animate-float">
-          <img 
-            src="/lina.png" 
-            alt="Lina" 
+          <img
+            src="/lina.png"
+            alt="Lina"
             className="w-full h-full object-contain animate-flame-pulse"
           />
           {/* Glow Effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-orange-500/20 blur-3xl -z-10 animate-pulse"></div>
         </div>
-        
+
         <div className="relative px-4 py-20 sm:px-6 lg:px-8 z-10 w-full">
           <div className="text-center animate-fade-in max-w-4xl mx-auto">
             <div className="mb-8">
@@ -169,12 +169,12 @@ const Index = () => {
               </h1>
               <div className="w-32 h-1 bg-gradient-to-r from-red-500 to-yellow-500 mx-auto mb-6"></div>
             </div>
-            
+
             <p className="mt-6 text-xl leading-8 text-gray-300 max-w-3xl mx-auto">
-              Unlock the secrets of your gameplay with our comprehensive match analysis tool. 
+              Unlock the secrets of your gameplay with our comprehensive match analysis tool.
               Get detailed statistics, visualizations, and AI-powered insights to dominate the Ancient.
             </p>
-            
+
             <div className="mt-8 flex justify-center space-x-4">
               <div className="px-4 py-2 bg-red-600/20 rounded-full border border-red-500/30 backdrop-blur-sm">
                 <span className="text-red-400 font-medium">Professional Analysis</span>
@@ -192,7 +192,7 @@ const Index = () => {
 
       {/* Stats Section with Shadow Fiend Background */}
       <div className="py-16 px-4 sm:px-6 lg:px-8 relative">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
           style={{ backgroundImage: 'url(/shadow.jpg)' }}
         >
@@ -248,7 +248,7 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
             </Card>
-            
+
             <Card className="bg-slate-800/50 border-slate-700 text-white hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/10 animate-fade-in delay-500">
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-4">
@@ -260,7 +260,7 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
             </Card>
-            
+
             <Card className="bg-slate-800/50 border-slate-700 text-white hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-yellow-500/10 animate-fade-in delay-700">
               <CardHeader>
                 <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center mb-4">
@@ -286,59 +286,61 @@ const Index = () => {
                   Enter your Dota 2 match ID and unlock comprehensive insights to improve your gameplay
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-3">
-                      Match ID *
-                    </label>
-                    <Input
-                      type="text"
-                      placeholder="e.g., 7123456789"
-                      value={matchId}
-                      onChange={(e) => setMatchId(e.target.value)}
-                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-gray-400 h-12 text-lg focus:border-red-500 transition-colors"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-3">
-                      Steam ID (Optional)
-                    </label>
-                    <Input
-                      type="text"
-                      placeholder="e.g., 76561198000000000"
-                      value={steamId}
-                      onChange={(e) => setSteamId(e.target.value)}
-                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-gray-400 h-12 text-lg focus:border-blue-500 transition-colors"
-                    />
-                  </div>
+              <CardContent className="space-y-6 px-6 pb-8">
+                {/* Match ID Input */}
+                <div className="w-full max-w-md mx-auto">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Match ID <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder="e.g., 7123456789"
+                    value={matchId}
+                    onChange={(e) => {
+                      const numericValue = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                      setMatchId(numericValue);
+                    }}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const pastedData = e.clipboardData.getData('text');
+                      const numericValue = pastedData.replace(/[^0-9]/g, '').slice(0, 10);
+                      setMatchId(numericValue);
+                    }}
+                    maxLength={10}
+                    className="w-full h-12 bg-slate-700/50 border border-slate-600 text-white placeholder:text-gray-400 text-lg rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none transition-all duration-200"
+                  />
                 </div>
 
-                <Button
-                  onClick={handleAnalyze}
-                  disabled={!matchId.trim() || isAnalyzing}
-                  className="w-full bg-gradient-to-r from-red-600 via-red-500 to-yellow-500 hover:from-red-700 hover:via-red-600 hover:to-yellow-600 text-white font-semibold h-14 text-lg hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                      Analyzing Match...
-                    </>
-                  ) : (
-                    <>
-                      <SearchIcon className="h-5 w-5 mr-3" />
-                      Analyze Match Now
-                    </>
-                  )}
-                </Button>
-                
+                {/* Analyze Button */}
+                <div className="w-full max-w-md mx-auto">
+                  <Button
+                    onClick={handleAnalyze}
+                    disabled={!matchId.trim() || isAnalyzing}
+                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-red-600 via-red-500 to-yellow-500 hover:from-red-700 hover:via-red-600 hover:to-yellow-600 text-white transition-all duration-300 rounded-lg shadow-md hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                        Analyzing Match...
+                      </>
+                    ) : (
+                      <>
+                        <SearchIcon className="h-5 w-5 mr-3" />
+                        Analyze Match Now
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Note */}
                 <p className="text-center text-sm text-gray-400">
-                  Get your match ID from{" "}
-                  <span className="text-red-400 font-medium">Dota 2</span> or{" "}
-                  <span className="text-blue-400 font-medium">OpenDota</span>
+                  Get your match ID from <span className="text-red-400 font-medium">Dota 2</span> or{" "}
+                  <span className="text-blue-400 font-medium">OpenDota</span>.
                 </p>
               </CardContent>
+
             </Card>
           </div>
         </div>
