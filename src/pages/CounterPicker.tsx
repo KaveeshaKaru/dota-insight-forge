@@ -30,10 +30,8 @@ const CounterPicker: React.FC = () => {
   const [alliedHeroes, setAlliedHeroes] = useState<(any | null)[]>(Array(4).fill(null));
   const [enemyHeroes, setEnemyHeroes] = useState<(any | null)[]>(Array(5).fill(null));
   const [heroNameMap, setHeroNameMap] = useState<{ [key: string]: any }>({});
-  
   const [rank, setRank] = useState("Legend");
   const [role, setRole] = useState("Carry");
-
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +44,6 @@ const CounterPicker: React.FC = () => {
       if (heroData) {
         const heroesArray = Object.values(heroData);
         setAllHeroes(heroesArray);
-
         const nameMap = heroesArray.reduce((acc, hero) => {
           acc[hero.localized_name.toLowerCase()] = hero;
           return acc;
@@ -145,7 +142,7 @@ const CounterPicker: React.FC = () => {
       const enrichedSuggestions = parsedSuggestions.map((suggestion: any) => {
         const heroData = heroNameMap[suggestion.heroName.toLowerCase()];
         return { ...suggestion, ...heroData };
-      }).filter((s: any) => s.id); // Ensure we only show heroes found in our service
+      }).filter((s: any) => s.id);
 
       setSuggestions(enrichedSuggestions);
     } catch (e: any) {
@@ -158,23 +155,53 @@ const CounterPicker: React.FC = () => {
 
   return (
     <TooltipProvider>
-      <div className="bg-slate-900 text-white min-h-screen p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 p-4 sm:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
-          <header className="mb-8">
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">Counter Picker</h1>
-            <p className="mt-2 text-lg text-slate-400">Get AI-powered hero suggestions for your last pick.</p>
+          <header className="mb-8 text-center">
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-red-400">
+              Dota 2 Counter Picker
+            </h1>
+            <p className="mt-2 text-lg text-gray-300">AI-powered hero suggestions for your perfect draft</p>
           </header>
 
           <CounterPickerFilters rank={rank} setRank={setRank} role={role} setRole={setRole} />
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-            <TeamSection title="Your Team" heroes={alliedHeroes} onSelectHero={(h, i) => handleSelectHero(h, 'allies', i)} onRemoveHero={(i) => handleRemoveHero('allies', i)} allHeroes={allHeroes} pickedHeroIds={pickedHeroIds} icon={<Shield className="h-6 w-6 text-blue-400" />} />
-            <TeamSection title="Enemy Team" heroes={enemyHeroes} onSelectHero={(h, i) => handleSelectHero(h, 'enemies', i)} onRemoveHero={(i) => handleRemoveHero('enemies', i)} allHeroes={allHeroes} pickedHeroIds={pickedHeroIds} icon={<Swords className="h-6 w-6 text-red-400" />} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            <TeamSection 
+              title="Your Team" 
+              heroes={alliedHeroes} 
+              onSelectHero={(h, i) => handleSelectHero(h, 'allies', i)} 
+              onRemoveHero={(i) => handleRemoveHero('allies', i)} 
+              allHeroes={allHeroes} 
+              pickedHeroIds={pickedHeroIds} 
+              icon={<Shield className="h-6 w-6 text-blue-400" />} 
+            />
+            <TeamSection 
+              title="Enemy Team" 
+              heroes={enemyHeroes} 
+              onSelectHero={(h, i) => handleSelectHero(h, 'enemies', i)} 
+              onRemoveHero={(i) => handleRemoveHero('enemies', i)} 
+              allHeroes={allHeroes} 
+              pickedHeroIds={pickedHeroIds} 
+              icon={<Swords className="h-6 w-6 text-red-400" />} 
+            />
           </div>
 
-          <div className="mt-8">
-            <Button size="lg" className="w-full lg:w-auto bg-blue-600 hover:bg-blue-700 font-semibold text-lg" onClick={handleSuggestHeroes} disabled={isSuggesting}>
-              {isSuggesting ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Analyzing Draft...</> : "Suggest Heroes"}
+          <div className="mt-8 flex justify-center">
+            <Button 
+              size="lg" 
+              className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold text-lg py-6 px-8 rounded-lg transition-all duration-300 transform hover:scale-105" 
+              onClick={handleSuggestHeroes} 
+              disabled={isSuggesting}
+            >
+              {isSuggesting ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Analyzing Draft...
+                </>
+              ) : (
+                "Suggest Heroes"
+              )}
             </Button>
           </div>
 
@@ -186,20 +213,32 @@ const CounterPicker: React.FC = () => {
 };
 
 const CounterPickerFilters = ({ rank, setRank, role, setRole }) => (
-  <Card className="bg-slate-800/50 border-slate-700">
+  <Card className="bg-gray-800/50 border-gray-700 shadow-lg backdrop-blur-sm rounded-xl">
     <CardContent className="pt-6 flex flex-col sm:flex-row gap-4">
       <div className="flex-1">
-        <label className="text-sm font-medium text-slate-300 mb-2 block">Player Rank</label>
+        <label className="text-sm font-medium text-gray-200 mb-2 block">Player Rank</label>
         <Select value={rank} onValueChange={setRank}>
-          <SelectTrigger className="bg-slate-700 border-slate-600"><SelectValue /></SelectTrigger>
-          <SelectContent className="bg-slate-800 border-slate-700 text-white">{RANKS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+          <SelectTrigger className="bg-gray-700/50 border-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-gray-800 border-gray-700 text-white rounded-lg">
+            {RANKS.map(r => (
+              <SelectItem key={r} value={r} className="hover:bg-gray-700">{r}</SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       </div>
       <div className="flex-1">
-        <label className="text-sm font-medium text-slate-300 mb-2 block">Role to Fill</label>
+        <label className="text-sm font-medium text-gray-200 mb-2 block">Role to Fill</label>
         <Select value={role} onValueChange={setRole}>
-          <SelectTrigger className="bg-slate-700 border-slate-600"><SelectValue /></SelectTrigger>
-          <SelectContent className="bg-slate-800 border-slate-700 text-white">{ROLES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+          <SelectTrigger className="bg-gray-700/50 border-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-gray-800 border-gray-700 text-white rounded-lg">
+            {ROLES.map(m => (
+              <SelectItem key={m} value={m} className="hover:bg-gray-700">{m}</SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       </div>
     </CardContent>
@@ -208,61 +247,81 @@ const CounterPickerFilters = ({ rank, setRank, role, setRole }) => (
 
 const SuggestionResults = ({ suggestions, isLoading, error }) => {
   if (isLoading) {
-    return <div className="mt-8 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto" /><p className="mt-2">AI is thinking...</p></div>;
+    return (
+      <div className="mt-8 text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-400" />
+        <p className="mt-2 text-gray-300">AI is analyzing the draft...</p>
+      </div>
+    );
   }
   if (error) {
-    return <div className="mt-8 text-center text-red-400 p-4 bg-red-900/20 rounded-lg">{error}</div>;
+    return (
+      <div className="mt-8 text-center text-red-400 p-4 bg-red-900/20 rounded-lg shadow-lg">
+        {error}
+      </div>
+    );
   }
   if (suggestions.length === 0) {
     return (
-        <div className="mt-8">
-            <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader><CardTitle>Suggested Picks</CardTitle></CardHeader>
-                <CardContent><p className="text-slate-400">Select allied and enemy heroes, then click "Suggest Heroes" to see recommendations.</p></CardContent>
-            </Card>
-        </div>
+      <div className="mt-8">
+        <Card className="bg-gray-800/50 border-gray-700 shadow-lg backdrop-blur-sm rounded-xl">
+          <CardHeader>
+            <CardTitle className="text-xl font-bold text-white">Suggested Picks</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-300">Select allied and enemy heroes, then click "Suggest Heroes" to see recommendations.</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div className="mt-8">
-        <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader><CardTitle>AI-Powered Suggestions</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                {suggestions.map((s, i) => <SuggestionCard key={i} suggestion={s} />)}
-            </CardContent>
-        </Card>
+      <Card className="bg-gray-800/50 border-gray-700 shadow-lg backdrop-blur-sm rounded-xl">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold text-white">AI-Powered Suggestions</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          {suggestions.map((s, i) => (
+            <SuggestionCard key={i} suggestion={s} />
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 };
 
 const SuggestionCard = ({ suggestion }) => (
-    <Tooltip>
-        <TooltipTrigger asChild>
-            <div className="bg-slate-700/50 rounded-lg p-4 space-y-3 border-l-4 border-blue-500 hover:bg-slate-700 transition-colors cursor-pointer">
-                <div className="flex items-center space-x-3">
-                    <Avatar className="h-12 w-12"><AvatarImage src={getHeroImageUrl(suggestion)} /><AvatarFallback>{suggestion.heroName.substring(0,2)}</AvatarFallback></Avatar>
-                    <div>
-                        <h4 className="font-semibold text-white">{suggestion.heroName}</h4>
-                        <div className="flex items-center text-sm text-green-400 font-bold">
-                            <BarChart className="h-4 w-4 mr-1" />
-                            {suggestion.advantageScore}%
-                        </div>
-                    </div>
-                </div>
-                <div className="text-xs text-slate-300">
-                    {suggestion.roles.join(', ')}
-                </div>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <div className="bg-gray-700/50 rounded-lg p-4 space-y-3 border-l-4 border-blue-500 hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-md">
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-12 w-12 rounded-lg border-2 border-gray-600">
+            <AvatarImage src={getHeroImageUrl(suggestion)} />
+            <AvatarFallback className="bg-gray-600 text-white">{suggestion.heroName.substring(0, 2)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <h4 className="font-semibold text-white text-lg">{suggestion.heroName}</h4>
+            <div className="flex items-center text-sm text-green-400 font-bold">
+              <BarChart className="h-4 w-4 mr-1" />
+              {suggestion.advantageScore}%
             </div>
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs bg-slate-800 border-slate-700 text-white">
-            <div className="space-y-2 p-2">
-                <div className="font-bold text-lg">{suggestion.heroName}</div>
-                <div><strong className="text-red-400">Counters:</strong> {suggestion.counterStrategy}</div>
-                <div><strong className="text-blue-400">Synergy:</strong> {suggestion.synergyStrategy}</div>
-            </div>
-        </TooltipContent>
-    </Tooltip>
+          </div>
+        </div>
+        <div className="text-xs text-gray-300">
+          {suggestion.roles.join(', ')}
+        </div>
+      </div>
+    </TooltipTrigger>
+    <TooltipContent className="max-w-xs bg-gray-800 border-gray-700 text-white p-4 rounded-lg shadow-lg">
+      <div className="space-y-2">
+        <div className="font-bold text-lg">{suggestion.heroName}</div>
+        <div><strong className="text-red-400">Counters:</strong> {suggestion.counterStrategy}</div>
+        <div><strong className="text-blue-400">Synergy:</strong> {suggestion.synergyStrategy}</div>
+      </div>
+    </TooltipContent>
+  </Tooltip>
 );
 
 interface TeamSectionProps {
@@ -276,14 +335,14 @@ interface TeamSectionProps {
 }
 
 const TeamSection: React.FC<TeamSectionProps> = ({ title, heroes, onSelectHero, onRemoveHero, allHeroes, pickedHeroIds, icon }) => (
-  <Card className="bg-slate-800/50 border-slate-700">
+  <Card className="bg-gray-800/50 border-gray-700 shadow-lg backdrop-blur-sm rounded-xl">
     <CardHeader>
-      <CardTitle className="flex items-center space-x-2">
+      <CardTitle className="flex items-center space-x-2 text-xl font-bold text-white">
         {icon}
         <span>{title}</span>
       </CardTitle>
     </CardHeader>
-    <CardContent className="grid grid-cols-5 gap-4">
+    <CardContent className="grid grid-cols-5 gap-3">
       {heroes.map((hero, index) => (
         <HeroSlot
           key={index}
@@ -295,7 +354,7 @@ const TeamSection: React.FC<TeamSectionProps> = ({ title, heroes, onSelectHero, 
         />
       ))}
       {title === "Your Team" && (
-        <div className="h-20 w-20 bg-slate-700/50 rounded-lg flex items-center justify-center border-2 border-dashed border-blue-500" title="This is the hero you need to pick">
+        <div className="h-20 w-20 bg-gray-700/50 rounded-lg flex items-center justify-center border-2 border-dashed border-blue-500 transition-all duration-300 hover:bg-gray-700" title="This is the hero you need to pick">
           <BrainCircuit className="h-8 w-8 text-blue-400" />
         </div>
       )}
@@ -317,13 +376,13 @@ const HeroSlot: React.FC<HeroSlotProps> = ({ hero, onSelect, onRemove, allHeroes
   if (hero) {
     return (
       <div className="relative group">
-        <Avatar className="h-20 w-20 border-2 border-slate-600 rounded-lg">
+        <Avatar className="h-20 w-20 border-2 border-gray-600 rounded-lg transition-all duration-300 group-hover:scale-105">
           <AvatarImage src={getHeroImageUrl(hero)} alt={hero.localized_name} />
-          <AvatarFallback>{hero.localized_name.substring(0, 2)}</AvatarFallback>
+          <AvatarFallback className="bg-gray-600 text-white">{hero.localized_name.substring(0, 2)}</AvatarFallback>
         </Avatar>
         <button
           onClick={onRemove}
-          className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-600 rounded-full p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-600 rounded-full p-1.5 text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-700"
         >
           <X className="h-4 w-4" />
         </button>
@@ -334,8 +393,8 @@ const HeroSlot: React.FC<HeroSlotProps> = ({ hero, onSelect, onRemove, allHeroes
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="h-20 w-20 bg-slate-700/50 border-2 border-dashed border-slate-600 rounded-lg flex items-center justify-center hover:bg-slate-700 transition-colors">
-          <Plus className="h-8 w-8 text-slate-500" />
+        <button className="h-20 w-20 bg-gray-700/50 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-all duration-300 transform hover:scale-105">
+          <Plus className="h-8 w-8 text-gray-400" />
         </button>
       </DialogTrigger>
       <HeroPicker
@@ -351,49 +410,53 @@ const HeroSlot: React.FC<HeroSlotProps> = ({ hero, onSelect, onRemove, allHeroes
 };
 
 interface HeroPickerProps {
-    allHeroes: any[];
-    pickedHeroIds: Set<number>;
-    onSelectHero: (hero: any) => void;
+  allHeroes: any[];
+  pickedHeroIds: Set<number>;
+  onSelectHero: (hero: any) => void;
 }
 
 const HeroPicker: React.FC<HeroPickerProps> = ({ allHeroes, pickedHeroIds, onSelectHero }) => {
-    const [search, setSearch] = useState('');
-    const [attribute, setAttribute] = useState<'all' | 'str' | 'agi' | 'int'>('all');
+  const [search, setSearch] = useState('');
+  const [attribute, setAttribute] = useState<'all' | 'str' | 'agi' | 'int'>('all');
 
-    const filteredHeroes = useMemo(() => {
-        return allHeroes
-            .filter(h => !pickedHeroIds.has(h.id))
-            .filter(h => search === '' || h.localized_name.toLowerCase().includes(search.toLowerCase()))
-            .filter(h => attribute === 'all' || h.primary_attr === attribute)
-            .sort((a, b) => a.localized_name.localeCompare(b.localized_name));
-    }, [allHeroes, pickedHeroIds, search, attribute]);
+  const filteredHeroes = useMemo(() => {
+    return allHeroes
+      .filter(h => !pickedHeroIds.has(h.id))
+      .filter(h => search === '' || h.localized_name.toLowerCase().includes(search.toLowerCase()))
+      .filter(h => attribute === 'all' || h.primary_attr === attribute)
+      .sort((a, b) => a.localized_name.localeCompare(b.localized_name));
+  }, [allHeroes, pickedHeroIds, search, attribute]);
 
-    return (
-        <DialogContent className="max-w-4xl bg-slate-900 border-slate-700 text-white">
-            <DialogHeader>
-                <DialogTitle>Select a Hero</DialogTitle>
-            </DialogHeader>
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                <Input
-                    placeholder="Search heroes..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="bg-slate-800 border-slate-600"
-                />
-            </div>
-            <div className="max-h-[60vh] overflow-y-auto grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2 pr-2">
-                {filteredHeroes.map(hero => (
-                    <button key={hero.id} onClick={() => onSelectHero(hero)} className="space-y-1 group">
-                        <Avatar className="h-16 w-16 rounded-lg border-2 border-transparent group-hover:border-blue-500 transition-all">
-                            <AvatarImage src={getHeroImageUrl(hero)} />
-                            <AvatarFallback>{hero.localized_name.substring(0, 2)}</AvatarFallback>
-                        </Avatar>
-                        <p className="text-xs text-center text-slate-300 truncate">{hero.localized_name}</p>
-                    </button>
-                ))}
-            </div>
-        </DialogContent>
-    )
-}
+  return (
+    <DialogContent className="max-w-4xl bg-gray-900/95 border-gray-700 text-white rounded-xl shadow-xl">
+      <DialogHeader>
+        <DialogTitle className="text-2xl font-bold text-white">Select a Hero</DialogTitle>
+      </DialogHeader>
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        <Input
+          placeholder="Search heroes..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="bg-gray-800/50 border-gray-600 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+      <div className="max-h-[60vh] overflow-y-auto grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3 pr-2">
+        {filteredHeroes.map(hero => (
+          <button 
+            key={hero.id} 
+            onClick={() => onSelectHero(hero)} 
+            className="space-y-1 group transition-all duration-300"
+          >
+            <Avatar className="h-16 w-16 rounded-lg border-2 border-transparent group-hover:border-blue-500 transition-all duration-200">
+              <AvatarImage src={getHeroImageUrl(hero)} />
+              <AvatarFallback className="bg-gray-600 text-white">{hero.localized_name.substring(0, 2)}</AvatarFallback>
+            </Avatar>
+            <p className="text-xs text-center text-gray-300 group-hover:text-white transition-colors truncate">{hero.localized_name}</p>
+          </button>
+        ))}
+      </div>
+    </DialogContent>
+  );
+};
 
-export default CounterPicker; 
+export default CounterPicker;
