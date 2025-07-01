@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import MatchAnalysis from '@/components/MatchAnalysis';
+import { Link as RouterLink } from 'react-router-dom';
 
 const Index = () => {
   const [matchId, setMatchId] = useState('');
@@ -63,15 +64,10 @@ const Index = () => {
 
               {/* Desktop Navigation */}
               <div className="hidden md:flex items-center space-x-8">
-                <a href="#features" className="text-gray-300 hover:text-white hover:bg-slate-700/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                  Features
-                </a>
-                <a href="#stats" className="text-gray-300 hover:text-white hover:bg-slate-700/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                  Stats
-                </a>
-                <a href="#about" className="text-gray-300 hover:text-white hover:bg-slate-700/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                  About
-                </a>
+                <RouterLink to="/" className="text-gray-300 hover:text-white transition-colors">Home</RouterLink>
+                <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
+                <RouterLink to="/counter-picker" className="text-gray-300 hover:text-white transition-colors">Counter Picker</RouterLink>
+                <a href="#testimonials" className="text-gray-300 hover:text-white transition-colors">Testimonials</a>
                 <Button
                   variant="ghost"
                   className="bg-gradient-to-r from-red-500 to-yellow-500 text-white hover:from-red-600 hover:to-yellow-600 border-none"
@@ -102,24 +98,15 @@ const Index = () => {
           {isMobileMenuOpen && (
             <div className="md:hidden bg-slate-800/95 backdrop-blur-md border-t border-slate-700/50">
               <div className="px-2 pt-2 pb-3 space-y-1">
-                <a
-                  href="#features"
-                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700/50 transition-colors"
-                >
-                  Features
-                </a>
-                <a
-                  href="#stats"
-                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700/50 transition-colors"
-                >
-                  Stats
-                </a>
-                <a
-                  href="#about"
-                  className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700/50 transition-colors"
-                >
-                  About
-                </a>
+                <RouterLink to="/" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700/50 transition-colors">
+                  Home
+                </RouterLink>
+                <RouterLink to="/counter-picker" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700/50 transition-colors">
+                  Counter Picker
+                </RouterLink>
+                <RouterLink to="/matches/7891739226" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700/50 transition-colors">
+                  Match Analysis
+                </RouterLink>
                 <Button
                   variant="ghost"
                   className="w-full bg-gradient-to-r from-red-500 to-yellow-500 text-white hover:from-red-600 hover:to-yellow-600 border-none mt-2"
