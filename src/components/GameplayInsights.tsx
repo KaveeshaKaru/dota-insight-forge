@@ -21,13 +21,13 @@ interface Insight {
 }
 
 interface CoachingRecommendations {
-    priority_focus_areas: string[];
-    improvement_potential: string;
+  priority_focus_areas: string[];
+  improvement_potential: string;
 }
 
 interface AiAnalysis {
-    insights: Insight[];
-    coaching_recommendations: CoachingRecommendations;
+  insights: Insight[];
+  coaching_recommendations: CoachingRecommendations;
 }
 
 const iconMap: { [key: string]: React.ElementType } = {
@@ -46,7 +46,7 @@ const calculateTeamfightScore = (player: any, teamTotalKills: number): number =>
 const calculateVisionScore = (wardsPlaced: number, durationMinutes: number): number => { if (durationMinutes === 0) return 0; const wardsPer10Min = (wardsPlaced / durationMinutes) * 10; if (wardsPer10Min >= 7) return 90; if (wardsPer10Min >= 5) return 75; if (wardsPer10Min >= 3) return 60; if (wardsPer10Min >= 1) return 40; return 20; };
 
 // Helper functions for styling
-const getSeverityColor = (severity: string) => {
+  const getSeverityColor = (severity: string) => {
   switch (severity.toLowerCase()) {
     case 'high':
       return 'bg-red-500/20 border-red-500 text-red-300';
@@ -69,11 +69,11 @@ const getSeverityBadgeColor = (severity: string) => {
       return 'bg-green-600 hover:bg-green-700';
     default:
       return 'bg-gray-600 hover:bg-gray-700';
-  }
-};
+    }
+  };
 
-const getTypeColor = (type: string) => {
-  switch (type) {
+  const getTypeColor = (type: string) => {
+    switch (type) {
     case 'strength':
       return 'text-green-400';
     case 'weakness':
@@ -98,7 +98,7 @@ const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) =>
   // useEffect for AI-Generated Insights AND Coaching Tips
   useEffect(() => {
     if (!data) return;
-    
+
     const generateAiContent = async () => {
       setLoadingAi(true);
       setErrorAi(null);
@@ -120,7 +120,7 @@ const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) =>
             net_worth: p.net_worth,
           })),
         };
-      
+
         const prompt = `
             You are an expert Dota 2 analyst. Analyze the following JSON data for a Dota 2 match.
             Match Data:
@@ -130,7 +130,7 @@ const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) =>
             1. "insights" should be an array of 5-7 objects. Refer to players by their hero_name, NOT an ID. Each object has: "type", "title", "description", "suggestion", "severity".
             2. "coaching_recommendations" should be an object with two keys: "priority_focus_areas" (array of 3-4 strings) and "improvement_potential" (a single string).
         `;
-      
+
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -138,7 +138,7 @@ const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) =>
         });
 
         if (!response.ok) throw new Error(`Gemini API request failed: ${response.statusText}`);
-        
+
         const geminiData = await response.json();
         const textResponse = geminiData.candidates[0].content.parts[0].text;
         const cleanedJson = textResponse.replace(/```json|```/g, '').trim();
@@ -172,7 +172,7 @@ const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) =>
     const teamfightScore = calculateTeamfightScore(topFighter, teamTotalKills);
     const visionScore = calculateVisionScore(topWarder.obs_placed || 0, durationMinutes);
     const economyScore = Math.round(Math.min((topNetWorth.net_worth / 50000) * 100, 100));
-    setPerformanceMetrics([ { category: 'Top Farmer', playerName: topFarmer.hero_name || 'Anonymous', score: farmingScore, grade: getGrade(farmingScore), color: getColor(farmingScore), icon: iconMap.farming, description: `Highest GPM in the match: ${topFarmer.gpm?.toLocaleString() || 0}.`, details: `Player: ${topFarmer.hero_name || 'Anonymous'}\nGPM: ${topFarmer.gpm?.toLocaleString() || 0}\nLast Hits: ${topFarmer.last_hits || 0}` }, { category: 'Top Team Fighter', playerName: topFighter.hero_name || 'Anonymous', score: teamfightScore, grade: getGrade(teamfightScore), color: getColor(teamfightScore), icon: iconMap.teamfighting, description: `Most impactful fighter with ${topFighter.kills || 0}/${topFighter.deaths || 0}/${topFighter.assists || 0}.`, details: `Player: ${topFighter.hero_name || 'Anonymous'}\nKDA: ${topFighter.kills || 0}/${topFighter.deaths || 0}/${topFighter.assists || 0}\nHero Damage: ${(topFighter.hero_damage || 0).toLocaleString()}` }, { category: 'Top Vision Provider', playerName: topWarder.hero_name || 'Anonymous', score: visionScore, grade: getGrade(visionScore), color: getColor(visionScore), icon: iconMap.vision, description: `Placed the most observer wards: ${topWarder.obs_placed || 0}.`, details: `Player: ${topWarder.hero_name || 'Anonymous'}\nObserver Wards: ${topWarder.obs_placed || 0}\nSentry Wards: ${topWarder.sen_placed || 0}` }, { category: 'Top Economic Impact', playerName: topNetWorth.hero_name || 'Anonymous', score: economyScore, grade: getGrade(economyScore), color: getColor(economyScore), icon: iconMap.economy, description: `Highest net worth: ${topNetWorth.net_worth?.toLocaleString() || 0}.`, details: `Player: ${topNetWorth.hero_name || 'Anonymous'}\nFinal Net Worth: ${(topNetWorth.net_worth || 0).toLocaleString()}` } ]);
+    setPerformanceMetrics([{ category: 'Top Farmer', playerName: topFarmer.hero_name || 'Anonymous', score: farmingScore, grade: getGrade(farmingScore), color: getColor(farmingScore), icon: iconMap.farming, description: `Highest GPM in the match: ${topFarmer.gpm?.toLocaleString() || 0}.`, details: `Player: ${topFarmer.hero_name || 'Anonymous'}\nGPM: ${topFarmer.gpm?.toLocaleString() || 0}\nLast Hits: ${topFarmer.last_hits || 0}` }, { category: 'Top Team Fighter', playerName: topFighter.hero_name || 'Anonymous', score: teamfightScore, grade: getGrade(teamfightScore), color: getColor(teamfightScore), icon: iconMap.teamfighting, description: `Most impactful fighter with ${topFighter.kills || 0}/${topFighter.deaths || 0}/${topFighter.assists || 0}.`, details: `Player: ${topFighter.hero_name || 'Anonymous'}\nKDA: ${topFighter.kills || 0}/${topFighter.deaths || 0}/${topFighter.assists || 0}\nHero Damage: ${(topFighter.hero_damage || 0).toLocaleString()}` }, { category: 'Top Vision Provider', playerName: topWarder.hero_name || 'Anonymous', score: visionScore, grade: getGrade(visionScore), color: getColor(visionScore), icon: iconMap.vision, description: `Placed the most observer wards: ${topWarder.obs_placed || 0}.`, details: `Player: ${topWarder.hero_name || 'Anonymous'}\nObserver Wards: ${topWarder.obs_placed || 0}\nSentry Wards: ${topWarder.sen_placed || 0}` }, { category: 'Top Economic Impact', playerName: topNetWorth.hero_name || 'Anonymous', score: economyScore, grade: getGrade(economyScore), color: getColor(economyScore), icon: iconMap.economy, description: `Highest net worth: ${topNetWorth.net_worth?.toLocaleString() || 0}.`, details: `Player: ${topNetWorth.hero_name || 'Anonymous'}\nFinal Net Worth: ${(topNetWorth.net_worth || 0).toLocaleString()}` }]);
     setLoadingMetrics(false);
   }, [data]);
 
@@ -195,10 +195,10 @@ const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) =>
                 const IconComponent = insight.icon;
                 return (
                     <div key={index} className={`bg-slate-800/60 rounded-lg p-4 space-y-3 border-l-4 ${getSeverityColor(insight.severity)}`}>
-                      <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between">
                         <div className="flex items-center space-x-3">
                           <IconComponent className={`h-5 w-5`} />
-                          <h4 className="font-semibold text-white">{insight.title}</h4>
+                        <h4 className="font-semibold text-white">{insight.title}</h4>
                         </div>
                         <Badge className={`${getSeverityBadgeColor(insight.severity)} text-white text-xs`}>{insight.severity.toUpperCase()}</Badge>
                       </div>
@@ -214,10 +214,10 @@ const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) =>
 
         {/* Card 2: Interactive Performance Summary */}
         <Card className="bg-slate-800/50 border-slate-700 text-white overflow-hidden">
-            <CardHeader><CardTitle className="flex items-center space-x-2"><Trophy className="h-6 w-6 text-yellow-400" /><span>Match Performance Highlights</span></CardTitle><p className="text-sm text-gray-400">Analysis of the top performers in key categories.</p></CardHeader>
+          <CardHeader><CardTitle className="flex items-center space-x-2"><Trophy className="h-6 w-6 text-yellow-400" /><span>Match Performance Highlights</span></CardTitle><p className="text-sm text-gray-400">Analysis of the top performers in key categories.</p></CardHeader>
           <CardContent>
-                {loadingMetrics && <div className="flex items-center justify-center h-48"><Loader2 className="h-8 w-8 animate-spin" /></div>}
-                {!loadingMetrics && performanceMetrics.length > 0 ? (<div className="grid grid-cols-1 md:grid-cols-2 gap-6">{performanceMetrics.map((metric, index) => <Tooltip key={index}><TooltipTrigger asChild><div className={`relative p-6 rounded-lg border-2 ${getColorClasses(metric.color).bg} ${getColorClasses(metric.color).border} hover:scale-105 transition-all duration-300 cursor-pointer group`}><div className="relative z-10"><div className="flex items-center justify-between mb-4"><metric.icon className={`h-8 w-8 ${getColorClasses(metric.color).text} group-hover:scale-110 transition-transform duration-300`} /><div className="text-right"><div className={`text-3xl font-bold ${getColorClasses(metric.color).text} mb-1`}>{metric.grade}</div><div className={`text-xs ${getColorClasses(metric.color).textSecondary}`}>{metric.playerName}</div></div></div><div className="space-y-3"><h3 className={`font-semibold ${getColorClasses(metric.color).textSecondary} text-lg`}>{metric.category}</h3><div className="space-y-2"><div className="flex justify-between text-sm"><span className="text-gray-300">Performance Score</span><span className={getColorClasses(metric.color).text}>{metric.score}%</span></div><div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden"><div className={`h-full ${getColorClasses(metric.color).progress} rounded-full`} style={{ width: `${metric.score}%` }}></div></div></div><p className="text-sm text-gray-400 group-hover:text-gray-300">{metric.description}</p></div></div></div></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><div className="space-y-2"><h4 className="font-semibold">{metric.category} Details</h4><pre className="text-xs whitespace-pre-line">{metric.details}</pre></div></TooltipContent></Tooltip>)}</div>) : !loadingMetrics && <div className="text-center py-12 text-gray-400"><p>Performance data could not be generated.</p></div>}
+            {loadingMetrics && <div className="flex items-center justify-center h-48"><Loader2 className="h-8 w-8 animate-spin" /></div>}
+            {!loadingMetrics && performanceMetrics.length > 0 ? (<div className="grid grid-cols-1 md:grid-cols-2 gap-6">{performanceMetrics.map((metric, index) => <Tooltip key={index}><TooltipTrigger asChild><div className={`relative p-6 rounded-lg border-2 ${getColorClasses(metric.color).bg} ${getColorClasses(metric.color).border} hover:scale-105 transition-all duration-300 cursor-pointer group`}><div className="relative z-10"><div className="flex items-center justify-between mb-4"><metric.icon className={`h-8 w-8 ${getColorClasses(metric.color).text} group-hover:scale-110 transition-transform duration-300`} /><div className="text-right"><div className={`text-3xl font-bold ${getColorClasses(metric.color).text} mb-1`}>{metric.grade}</div><div className={`text-xs ${getColorClasses(metric.color).textSecondary}`}>{metric.playerName}</div></div></div><div className="space-y-3"><h3 className={`font-semibold ${getColorClasses(metric.color).textSecondary} text-lg`}>{metric.category}</h3><div className="space-y-2"><div className="flex justify-between text-sm"><span className="text-gray-300">Performance Score</span><span className={getColorClasses(metric.color).text}>{metric.score}%</span></div><div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden"><div className={`h-full ${getColorClasses(metric.color).progress} rounded-full`} style={{ width: `${metric.score}%` }}></div></div></div><p className="text-sm text-gray-400 group-hover:text-gray-300">{metric.description}</p></div></div></div></TooltipTrigger><TooltipContent side="top" className="max-w-xs"><div className="space-y-2"><h4 className="font-semibold">{metric.category} Details</h4><pre className="text-xs whitespace-pre-line">{metric.details}</pre></div></TooltipContent></Tooltip>)}</div>) : !loadingMetrics && <div className="text-center py-12 text-gray-400"><p>Performance data could not be generated.</p></div>}
           </CardContent>
         </Card>
 
