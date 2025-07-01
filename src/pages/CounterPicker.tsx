@@ -16,7 +16,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { heroService } from '@/services/hero-service';
 
 const RANKS = ["Herald", "Guardian", "Crusader", "Archon", "Legend", "Ancient", "Divine", "Immortal"];
-const GAME_MODES = ["All Pick", "Captains Mode", "Random Draft", "Turbo"];
+const ROLES = ["Carry", "Midlaner", "Offlaner", "Soft Support", "Hard Support"];
 
 const getHeroImageUrl = (hero: any) => {
   if (!hero || !hero.name) return '';
@@ -27,12 +27,12 @@ const getHeroImageUrl = (hero: any) => {
 // Main Component
 const CounterPicker: React.FC = () => {
   const [allHeroes, setAllHeroes] = useState<any[]>([]);
-  const [alliedHeroes, setAlliedHeroes] = useState<(any | null)[]>(Array(5).fill(null));
+  const [alliedHeroes, setAlliedHeroes] = useState<(any | null)[]>(Array(4).fill(null));
   const [enemyHeroes, setEnemyHeroes] = useState<(any | null)[]>(Array(5).fill(null));
   const [heroNameMap, setHeroNameMap] = useState<{ [key: string]: any }>({});
   
   const [rank, setRank] = useState("Legend");
-  const [gameMode, setGameMode] = useState("All Pick");
+  const [role, setRole] = useState("Carry");
 
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -94,15 +94,20 @@ const CounterPicker: React.FC = () => {
       setIsSuggesting(false);
       return;
     }
+    if (allies.length === 0) {
+      setError("Please select at least one allied hero for synergy analysis.");
+      setIsSuggesting(false);
+      return;
+    }
 
     const unpickedHeroes = allHeroes.filter(h => !pickedHeroIds.has(h.id)).map(h => h.localized_name);
 
     const prompt = `
       **Dota 2 Counter Picker Assistant**
-      **Goal:** Suggest the top 5 best heroes for "Your Team" to counter the "Enemy Team" and synergize with existing allies.
+      **Goal:** Suggest the top 5 best heroes for the **${role}** role for "Your Team" to counter the "Enemy Team" and synergize with existing allies. This is for the last pick of the draft.
       **Context:**
       - Player Rank: ${rank}
-      - Game Mode: ${gameMode}
+      - Role to Fill: ${role}
       - Your Team (Allies): ${allies.join(', ') || 'None'}
       - Enemy Team: ${enemies.join(', ')}
       - Available Heroes: ${unpickedHeroes.join(', ')}
@@ -157,10 +162,10 @@ const CounterPicker: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <header className="mb-8">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">Counter Picker</h1>
-            <p className="mt-2 text-lg text-slate-400">Get AI-powered hero suggestions to counter your opponent's draft.</p>
+            <p className="mt-2 text-lg text-slate-400">Get AI-powered hero suggestions for your last pick.</p>
           </header>
 
-          <CounterPickerFilters rank={rank} setRank={setRank} gameMode={gameMode} setGameMode={setGameMode} />
+          <CounterPickerFilters rank={rank} setRank={setRank} role={role} setRole={setRole} />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
             <TeamSection title="Your Team" heroes={alliedHeroes} onSelectHero={(h, i) => handleSelectHero(h, 'allies', i)} onRemoveHero={(i) => handleRemoveHero('allies', i)} allHeroes={allHeroes} pickedHeroIds={pickedHeroIds} icon={<Shield className="h-6 w-6 text-blue-400" />} />
@@ -180,7 +185,7 @@ const CounterPicker: React.FC = () => {
   );
 };
 
-const CounterPickerFilters = ({ rank, setRank, gameMode, setGameMode }) => (
+const CounterPickerFilters = ({ rank, setRank, role, setRole }) => (
   <Card className="bg-slate-800/50 border-slate-700">
     <CardContent className="pt-6 flex flex-col sm:flex-row gap-4">
       <div className="flex-1">
@@ -191,10 +196,10 @@ const CounterPickerFilters = ({ rank, setRank, gameMode, setGameMode }) => (
         </Select>
       </div>
       <div className="flex-1">
-        <label className="text-sm font-medium text-slate-300 mb-2 block">Game Mode</label>
-        <Select value={gameMode} onValueChange={setGameMode}>
+        <label className="text-sm font-medium text-slate-300 mb-2 block">Role to Fill</label>
+        <Select value={role} onValueChange={setRole}>
           <SelectTrigger className="bg-slate-700 border-slate-600"><SelectValue /></SelectTrigger>
-          <SelectContent className="bg-slate-800 border-slate-700 text-white">{GAME_MODES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+          <SelectContent className="bg-slate-800 border-slate-700 text-white">{ROLES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
         </Select>
       </div>
     </CardContent>
@@ -213,7 +218,7 @@ const SuggestionResults = ({ suggestions, isLoading, error }) => {
         <div className="mt-8">
             <Card className="bg-slate-800/50 border-slate-700">
                 <CardHeader><CardTitle>Suggested Picks</CardTitle></CardHeader>
-                <CardContent><p className="text-slate-400">Select enemy heroes and click "Suggest Heroes" to see recommendations.</p></CardContent>
+                <CardContent><p className="text-slate-400">Select allied and enemy heroes, then click "Suggest Heroes" to see recommendations.</p></CardContent>
             </Card>
         </div>
     );
@@ -260,7 +265,6 @@ const SuggestionCard = ({ suggestion }) => (
     </Tooltip>
 );
 
-// TeamSection Component
 interface TeamSectionProps {
   title: string;
   heroes: (any | null)[];
@@ -290,11 +294,15 @@ const TeamSection: React.FC<TeamSectionProps> = ({ title, heroes, onSelectHero, 
           pickedHeroIds={pickedHeroIds}
         />
       ))}
+      {title === "Your Team" && (
+        <div className="h-20 w-20 bg-slate-700/50 rounded-lg flex items-center justify-center border-2 border-dashed border-blue-500" title="This is the hero you need to pick">
+          <BrainCircuit className="h-8 w-8 text-blue-400" />
+        </div>
+      )}
     </CardContent>
   </Card>
 );
 
-// HeroSlot Component
 interface HeroSlotProps {
   hero: any | null;
   onSelect: (hero: any) => void;
@@ -342,7 +350,6 @@ const HeroSlot: React.FC<HeroSlotProps> = ({ hero, onSelect, onRemove, allHeroes
   );
 };
 
-// HeroPicker Component
 interface HeroPickerProps {
     allHeroes: any[];
     pickedHeroIds: Set<number>;
