@@ -10,6 +10,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -35,7 +45,7 @@ const CounterPicker: React.FC = () => {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [selectedSuggestion, setSelectedSuggestion] = useState<any | null>(null);
   const GEMINI_API_KEY = 'AIzaSyCQoymIaFGlrTFhuTyRsGVLePoOlnxTM-s';
 
   useEffect(() => {
@@ -76,6 +86,19 @@ const CounterPicker: React.FC = () => {
       newTeam[index] = null;
       return newTeam;
     });
+  };
+
+  const handleConfirmPick = () => {
+    if (!selectedSuggestion) return;
+    const firstEmptyIndex = alliedHeroes.findIndex(h => h === null);
+    if (firstEmptyIndex !== -1) {
+      setAlliedHeroes(currentAllies => {
+        const newAllies = [...currentAllies];
+        newAllies[firstEmptyIndex] = selectedSuggestion;
+        return newAllies;
+      });
+    }
+    setSelectedSuggestion(null);
   };
 
   const handleSuggestHeroes = async () => {
@@ -205,7 +228,27 @@ const CounterPicker: React.FC = () => {
             </Button>
           </div>
 
-          <SuggestionResults suggestions={suggestions} isLoading={isSuggesting} error={error} />
+          <SuggestionResults 
+            suggestions={suggestions} 
+            isLoading={isSuggesting} 
+            error={error}
+            onSuggestionClick={setSelectedSuggestion}
+          />
+
+          <AlertDialog open={!!selectedSuggestion} onOpenChange={() => setSelectedSuggestion(null)}>
+            <AlertDialogContent className="bg-gray-800/95 border-gray-700 text-white">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Do you want to pick {selectedSuggestion?.heroName}?</AlertDialogTitle>
+                <AlertDialogDescription className="text-gray-300">
+                  This will add {selectedSuggestion?.heroName} to the next available slot in Your Team.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="bg-gray-600 hover:bg-gray-500 border-0">Cancel</AlertDialogCancel>
+                <AlertDialogAction className="bg-blue-600 hover:bg-blue-500" onClick={handleConfirmPick}>Yes, Pick Hero</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </TooltipProvider>
@@ -245,7 +288,7 @@ const CounterPickerFilters = ({ rank, setRank, role, setRole }) => (
   </Card>
 );
 
-const SuggestionResults = ({ suggestions, isLoading, error }) => {
+const SuggestionResults = ({ suggestions, isLoading, error, onSuggestionClick }) => {
   if (isLoading) {
     return (
       <div className="mt-8 text-center">
@@ -284,7 +327,7 @@ const SuggestionResults = ({ suggestions, isLoading, error }) => {
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {suggestions.map((s, i) => (
-            <SuggestionCard key={i} suggestion={s} />
+            <SuggestionCard key={i} suggestion={s} onSuggestionClick={onSuggestionClick} />
           ))}
         </CardContent>
       </Card>
@@ -292,10 +335,10 @@ const SuggestionResults = ({ suggestions, isLoading, error }) => {
   );
 };
 
-const SuggestionCard = ({ suggestion }) => (
+const SuggestionCard = ({ suggestion, onSuggestionClick }) => (
   <Tooltip>
     <TooltipTrigger asChild>
-      <div className="bg-gray-700/50 rounded-lg p-4 space-y-3 border-l-4 border-blue-500 hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-md">
+      <div onClick={() => onSuggestionClick(suggestion)} className="bg-gray-700/50 rounded-lg p-4 space-y-3 border-l-4 border-blue-500 hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-md">
         <div className="flex items-center space-x-3">
           <Avatar className="h-12 w-12 rounded-lg border-2 border-gray-600">
             <AvatarImage src={getHeroImageUrl(suggestion)} />
