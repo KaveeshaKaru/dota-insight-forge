@@ -349,7 +349,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-gray-400">
-              Built for the Dota 2 community with ❤️ | Powered by advanced analytics
+              Built for the Dota 2 community with ❤️ | Powered by Zack Malli
             </p>
           </div>
         </div>

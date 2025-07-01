@@ -80,11 +80,11 @@ const MatchOverview: React.FC<MatchOverviewProps> = ({ data }) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-green-900/30 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-green-900/90 rounded-lg">
               <span className="font-semibold text-green-400">Radiant</span>
               <span className="text-2xl font-bold">{radiantScore}</span>
             </div>
-            <div className="flex items-center justify-between p-3 bg-red-900/30 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-red-900/90 rounded-lg">
               <span className="font-semibold text-red-400">Dire</span>
               <span className="text-2xl font-bold">{direScore}</span>
             </div>

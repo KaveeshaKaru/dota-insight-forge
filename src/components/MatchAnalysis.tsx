@@ -61,7 +61,7 @@ const MatchAnalysis: React.FC<MatchAnalysisProps> = ({ matchId, steamId, onBack 
               <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl mb-2">
               Match Analysis
               </h1>
-              <p className="text-gray-400">Match ID: {matchId}</p>
+              <p className="text-white">Match ID: {matchId}</p>
             </div>
           </div>
           {loading && (
