@@ -47,7 +47,6 @@ const CounterPicker: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedSuggestion, setSelectedSuggestion] = useState<any | null>(null);
   const [bannedSuggestionIds, setBannedSuggestionIds] = useState<Set<number>>(new Set());
-  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
   useEffect(() => {
     const fetchHeroes = async () => {
@@ -161,10 +160,10 @@ const CounterPicker: React.FC = () => {
 
     let text = '';
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
+      const response = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { response_mime_type: "application/json" } }),
+        body: JSON.stringify({ prompt }),
       });
 
       if (!response.ok) {
@@ -175,7 +174,7 @@ const CounterPicker: React.FC = () => {
         } catch (e) {
           errorDetails += ' Could not parse error response body.';
         }
-        throw new Error(`Google API request failed. ${errorDetails}`);
+        throw new Error(`API request failed. ${errorDetails}`);
       }
       
       const data = await response.json();

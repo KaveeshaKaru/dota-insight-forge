@@ -36,8 +36,6 @@ const iconMap: { [key: string]: React.ElementType } = {
   economy: Award, default: Brain
 };
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY; 
-
 // --- Helper Functions for Performance Metrics (Client-Side Calculations) ---
 const getGrade = (score: number): string => { if (score >= 90) return 'A+'; if (score >= 80) return 'A'; if (score >= 70) return 'B'; if (score >= 60) return 'C'; if (score >= 50) return 'D'; return 'F'; };
 const getColor = (score: number): string => { if (score >= 80) return 'blue'; if (score >= 70) return 'green'; if (score >= 60) return 'yellow'; return 'red'; };
@@ -131,13 +129,13 @@ const GameplayInsights: React.FC<GameplayInsightsProps> = ({ data, steamId }) =>
             2. "coaching_recommendations" should be an object with two keys: "priority_focus_areas" (array of 3-4 strings) and "improvement_potential" (a single string).
         `;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch('/api/gemini', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+          body: JSON.stringify({ prompt }),
         });
 
-        if (!response.ok) throw new Error(`Gemini API request failed: ${response.statusText}`);
+        if (!response.ok) throw new Error(`API request failed: ${response.statusText}`);
 
         const geminiData = await response.json();
         const textResponse = geminiData.candidates[0].content.parts[0].text;
