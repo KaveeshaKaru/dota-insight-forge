@@ -36,7 +36,7 @@ const iconMap: { [key: string]: React.ElementType } = {
   economy: Award, default: Brain
 };
 
-const GEMINI_API_KEY = 'AIzaSyCQoymIaFGlrTFhuTyRsGVLePoOlnxTM-s'; // WARNING: NOT FOR PRODUCTION
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY; // WARNING: NOT FOR PRODUCTION
 
 // --- Helper Functions for Performance Metrics (Client-Side Calculations) ---
 const getGrade = (score: number): string => { if (score >= 90) return 'A+'; if (score >= 80) return 'A'; if (score >= 70) return 'B'; if (score >= 60) return 'C'; if (score >= 50) return 'D'; return 'F'; };
