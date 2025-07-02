@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { heroService } from '@/services/hero-service';
+import ScrambledText from '@/components/ScrambleText';
 
 const RANKS = ["Herald", "Guardian", "Crusader", "Archon", "Legend", "Ancient", "Divine", "Immortal"];
 const ROLES = ["Carry", "Midlaner", "Offlaner", "Soft Support", "Hard Support"];
@@ -211,79 +212,106 @@ const CounterPicker: React.FC = () => {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 p-4 sm:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto">
-          <header className="mb-8 text-center">
-            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-red-400">
-              Dota 2 Counter Picker
-            </h1>
-            <p className="mt-2 text-lg text-gray-300">AI-powered hero suggestions for your perfect draft</p>
-          </header>
+      <div className="relative min-h-screen">
+        {/* Video Background */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="fixed inset-0 w-full h-full object-cover z-0"
+          src="/WraithKing.mp4"
+        />
+        {/* Overlay for darkening and blur */}
+        <div className="fixed inset-0 bg-black/20 z-10" />
+        <div className="relative z-20 min-h-screen bg-gradient-to-b from-gray-900/50 to-gray-800/80 p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
+            <header className="mb-8 text-center">
+              <ScrambledText 
+                className="text-4xl sm:text-8xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-red-400 m-0 max-w-none"
+                radius={150}
+                duration={0.8}
+                speed={0.3}
+                scrambleChars=".:!@#$%^&*()"
+              >
+                Dota 2 Counter Picker
+              </ScrambledText>
+              <ScrambledText 
+                className="mt-2 text-lg text-gray-300 m-0 max-w-none"
+                radius={80}
+                duration={0.6}
+                speed={0.4}
+                scrambleChars=".:!@#$%^&*()"
+              >
+                AI-powered hero suggestions for your perfect draft
+              </ScrambledText>
+            </header>
 
-          <CounterPickerFilters rank={rank} setRank={setRank} role={role} setRole={setRole} />
+            <CounterPickerFilters rank={rank} setRank={setRank} role={role} setRole={setRole} />
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-            <TeamSection 
-              title="Your Team" 
-              heroes={alliedHeroes} 
-              onSelectHero={(h, i) => handleSelectHero(h, 'allies', i)} 
-              onRemoveHero={(i) => handleRemoveHero('allies', i)} 
-              allHeroes={allHeroes} 
-              pickedHeroIds={pickedHeroIds} 
-              icon={<Shield className="h-6 w-6 text-blue-400" />} 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+              <TeamSection 
+                title="Your Team" 
+                heroes={alliedHeroes} 
+                onSelectHero={(h, i) => handleSelectHero(h, 'allies', i)} 
+                onRemoveHero={(i) => handleRemoveHero('allies', i)} 
+                allHeroes={allHeroes} 
+                pickedHeroIds={pickedHeroIds} 
+                icon={<Shield className="h-6 w-6 text-blue-400" />} 
+              />
+              <TeamSection 
+                title="Enemy Team" 
+                heroes={enemyHeroes} 
+                onSelectHero={(h, i) => handleSelectHero(h, 'enemies', i)} 
+                onRemoveHero={(i) => handleRemoveHero('enemies', i)} 
+                allHeroes={allHeroes} 
+                pickedHeroIds={pickedHeroIds} 
+                icon={<Swords className="h-6 w-6 text-red-400" />} 
+              />
+            </div>
+
+            <div className="mt-8 flex justify-center">
+              <Button 
+                size="lg" 
+                className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold text-lg py-6 px-8 rounded-lg transition-all duration-300 transform hover:scale-105" 
+                onClick={handleSuggestHeroes} 
+                disabled={isSuggesting}
+              >
+                {isSuggesting ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Analyzing Draft...
+                  </>
+                ) : (
+                  "Suggest Heroes"
+                )}
+              </Button>
+            </div>
+
+            <SuggestionResults 
+              suggestions={suggestions} 
+              isLoading={isSuggesting} 
+              error={error}
+              onSuggestionClick={setSelectedSuggestion}
+              onBanSuggestion={handleBanSuggestion}
+              bannedSuggestionIds={bannedSuggestionIds}
             />
-            <TeamSection 
-              title="Enemy Team" 
-              heroes={enemyHeroes} 
-              onSelectHero={(h, i) => handleSelectHero(h, 'enemies', i)} 
-              onRemoveHero={(i) => handleRemoveHero('enemies', i)} 
-              allHeroes={allHeroes} 
-              pickedHeroIds={pickedHeroIds} 
-              icon={<Swords className="h-6 w-6 text-red-400" />} 
-            />
+
+            <AlertDialog open={!!selectedSuggestion} onOpenChange={() => setSelectedSuggestion(null)}>
+              <AlertDialogContent className="bg-gray-800/95 border-gray-700 text-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Do you want to pick {selectedSuggestion?.heroName}?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-gray-300">
+                    This will add {selectedSuggestion?.heroName} to the next available slot in Your Team.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="bg-gray-600 hover:bg-gray-500 border-0">Cancel</AlertDialogCancel>
+                  <AlertDialogAction className="bg-blue-600 hover:bg-blue-500" onClick={handleConfirmPick}>Yes, Pick Hero</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
-
-          <div className="mt-8 flex justify-center">
-            <Button 
-              size="lg" 
-              className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold text-lg py-6 px-8 rounded-lg transition-all duration-300 transform hover:scale-105" 
-              onClick={handleSuggestHeroes} 
-              disabled={isSuggesting}
-            >
-              {isSuggesting ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Analyzing Draft...
-                </>
-              ) : (
-                "Suggest Heroes"
-              )}
-            </Button>
-          </div>
-
-          <SuggestionResults 
-            suggestions={suggestions} 
-            isLoading={isSuggesting} 
-            error={error}
-            onSuggestionClick={setSelectedSuggestion}
-            onBanSuggestion={handleBanSuggestion}
-            bannedSuggestionIds={bannedSuggestionIds}
-          />
-
-          <AlertDialog open={!!selectedSuggestion} onOpenChange={() => setSelectedSuggestion(null)}>
-            <AlertDialogContent className="bg-gray-800/95 border-gray-700 text-white">
-              <AlertDialogHeader>
-                <AlertDialogTitle>Do you want to pick {selectedSuggestion?.heroName}?</AlertDialogTitle>
-                <AlertDialogDescription className="text-gray-300">
-                  This will add {selectedSuggestion?.heroName} to the next available slot in Your Team.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="bg-gray-600 hover:bg-gray-500 border-0">Cancel</AlertDialogCancel>
-                <AlertDialogAction className="bg-blue-600 hover:bg-blue-500" onClick={handleConfirmPick}>Yes, Pick Hero</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </div>
       </div>
     </TooltipProvider>
