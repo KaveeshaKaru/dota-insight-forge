@@ -47,7 +47,7 @@ const CounterPicker: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedSuggestion, setSelectedSuggestion] = useState<any | null>(null);
   const [bannedSuggestionIds, setBannedSuggestionIds] = useState<Set<number>>(new Set());
-  const GEMINI_API_KEY = 'AIzaSyCQoymIaFGlrTFhuTyRsGVLePoOlnxTM-s';
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
   useEffect(() => {
     const fetchHeroes = async () => {
