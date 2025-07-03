@@ -42,7 +42,7 @@ const ScrambledText = ({
             overwrite: true,
             duration: duration * (1 - dist / radius),
             scrambleText: {
-              text: c.dataset.content || "",
+              text: (c as HTMLElement).dataset.content || "",
               chars: scrambleChars,
               speed,
             },

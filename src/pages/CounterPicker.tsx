@@ -25,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { heroService } from '@/services/hero-service';
 import ScrambledText from '@/components/ScrambleText';
+import SplashCursor from '@/components/SplashCursor';
 
 const RANKS = ["Herald", "Guardian", "Crusader", "Archon", "Legend", "Ancient", "Divine", "Immortal"];
 const ROLES = ["Carry", "Midlaner", "Offlaner", "Soft Support", "Hard Support"];
@@ -213,6 +214,7 @@ const CounterPicker: React.FC = () => {
   return (
     <TooltipProvider>
       <div className="relative min-h-screen">
+        <SplashCursor />
         {/* Video Background */}
         <video
           autoPlay
