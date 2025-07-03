@@ -230,7 +230,7 @@ const CounterPicker: React.FC = () => {
           <div className="max-w-7xl mx-auto">
             <header className="mb-8 text-center">
               <ScrambledText 
-                className="text-4xl sm:text-8xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-red-400 m-0 max-w-none"
+                className="text-4xl sm:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-red-400 m-0 max-w-none"
                 radius={150}
                 duration={0.8}
                 speed={0.3}
