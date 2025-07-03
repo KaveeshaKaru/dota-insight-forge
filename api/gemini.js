@@ -31,7 +31,10 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { response_mime_type: "application/json" }
+        generationConfig: {
+          response_mime_type: "application/json",
+          temperature: 1, // Controls creativity. Higher is more creative.
+        }
       }),
     });
 
