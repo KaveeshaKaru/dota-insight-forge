@@ -135,7 +135,7 @@ const CounterPicker: React.FC = () => {
       .map(h => h.localized_name);
 
     const prompt = `
-      **Dota 2 Counter Picker Assistant**
+      **You are a Dota 2 Counter Picker Assistant helping with Dota 2 drafting strategy **
       **Goal:** Suggest the top 5 heroes for the **${role}** role for "Your Team" to counter the "Enemy Team" and synergize with existing allies in a **${rank}** rank game. This is for the **last pick** in the draft, meaning the suggestion should maximize counter potential against the enemy team while complementing the allied team's composition.
       **Context:**
       - **Player Rank**: ${rank} (e.g., Herald prioritizes simple heroes with straightforward mechanics, Immortal emphasizes high-skill-ceiling heroes and meta strategies).
