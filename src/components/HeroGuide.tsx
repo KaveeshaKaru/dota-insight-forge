@@ -4,13 +4,14 @@ import { Loader2, Swords, Shield, Star, Skull, BookOpen } from 'lucide-react';
 
 interface HeroGuideProps {
   hero: any;
-  allies: any[];
+  role?: string;
+  allies: { hero: any | null; role: string }[];
   enemies: any[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const HeroGuide: React.FC<HeroGuideProps> = ({ hero, allies, enemies, open, onOpenChange }) => {
+const HeroGuide: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open, onOpenChange }) => {
   const [guide, setGuide] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,18 +23,19 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, allies, enemies, open, onOp
         setError(null);
         setGuide(null);
 
-        const alliedNames = allies.filter(Boolean).map(h => h.localized_name);
+        const alliedNames = allies.filter(p => p.hero).map(p => `${p.hero.localized_name} (${p.role})`);
         const enemyNames = enemies.filter(Boolean).map(h => h.localized_name);
 
         const prompt = `
           You are a Dota 2 expert coach and analyst.
 
-          Goal: Generate a personalized, strategic hero guide for ${hero.localized_name}, based on current team composition.
+          Goal: Generate a personalized, strategic hero guide for ${hero.localized_name} playing as **${role}**. The guide must be tailored to the specific matchup context provided below.
 
           Matchup Context:
           - Selected Hero: ${hero.localized_name}
+          - Role: ${role}
           - Allied Team Picks: ${alliedNames.join(', ') || 'None'}
-          - Enemy Team Picks: ${enemyNames.join(', ') || 'None'}
+          - Enemy Team Picks: ${enemyNames.join(', ') || 'None'} (Roles are unknown)
 
           Instructions:
           - Your response must be a valid single JSON object inside a \`\`\`json code block. Do not include any text or markdown outside this block.
@@ -79,12 +81,13 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, allies, enemies, open, onOp
           }
 
           Additional Guidelines:
-          - Be specific with item and skill justifications.
+          - Be specific with item and skill justifications, explaining *why* they are good in this specific role and against the enemy team composition.
           - Mention counterplay and synergy based on allied and enemy picks.
           - Use accurate Dota 2 item/spell names only.
           - Your response must be 100% valid JSON in a single \`\`\`json code block. No extra commentary.
         `;
 
+        console.log("Gemini Prompt for HeroGuide:", prompt);
         try {
           const response = await fetch('/api/gemini', {
             method: 'POST',
@@ -93,18 +96,18 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, allies, enemies, open, onOp
           });
 
           if (!response.ok) {
-            throw new Error('Failed to fetch guide from AI.');
+            throw new Error('Failed to fetch guide from Dota-Forger.');
           }
 
           const data = await response.json();
           const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
           if (!text) {
-            throw new Error("AI returned an empty response.");
+            throw new Error("Dota-Forger returned an empty response.");
           }
 
           const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```|({[\s\S]*})/);
           if (!jsonMatch) {
-            throw new Error("Could not find a JSON block in the AI's response.");
+            throw new Error("Could not find a JSON block in the Dota-Forger's response.");
           }
           const jsonString = jsonMatch[1] || jsonMatch[2];
 
@@ -118,7 +121,7 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, allies, enemies, open, onOp
 
       fetchGuide();
     }
-  }, [open, hero, allies, enemies]);
+  }, [open, hero, role, allies, enemies]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -134,10 +137,13 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, allies, enemies, open, onOp
                 alt={hero.localized_name}
                 className="h-12 w-12 rounded-lg"
               />
-              {hero.localized_name} Guide
+              <div>
+                {hero.localized_name} Guide
+                {role && <span className="block text-lg font-normal text-blue-300">{role}</span>}
+              </div>
             </SheetTitle>
             <SheetDescription className="text-gray-400">
-              AI-generated guide tailored to the current matchup.
+              Dota-Forger's guide tailored to the current matchup and role.
             </SheetDescription>
           </SheetHeader>
         )}

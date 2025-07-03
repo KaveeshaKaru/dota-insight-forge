@@ -40,7 +40,9 @@ const getHeroImageUrl = (hero: any) => {
 // Main Component
 const CounterPicker: React.FC = () => {
   const [allHeroes, setAllHeroes] = useState<any[]>([]);
-  const [alliedHeroes, setAlliedHeroes] = useState<(any | null)[]>(Array(5).fill(null));
+  const [alliedHeroes, setAlliedHeroes] = useState<{ hero: any | null; role: string }[]>(
+    ROLES.map(role => ({ hero: null, role }))
+  );
   const [enemyHeroes, setEnemyHeroes] = useState<(any | null)[]>(Array(5).fill(null));
   const [heroNameMap, setHeroNameMap] = useState<{ [key: string]: any }>({});
   const [rank, setRank] = useState("Legend");
@@ -50,7 +52,7 @@ const CounterPicker: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedSuggestion, setSelectedSuggestion] = useState<any | null>(null);
   const [bannedSuggestionIds, setBannedSuggestionIds] = useState<Set<number>>(new Set());
-  const [guideHero, setGuideHero] = useState<any | null>(null);
+  const [guidePick, setGuidePick] = useState<{ hero: any, role: string } | null>(null);
 
   useEffect(() => {
     const fetchHeroes = async () => {
@@ -70,37 +72,63 @@ const CounterPicker: React.FC = () => {
 
   const pickedHeroIds = useMemo(() => {
     const picked = new Set<number>();
-    [...alliedHeroes, ...enemyHeroes].forEach(h => h && picked.add(h.id));
+    alliedHeroes.forEach(p => p.hero && picked.add(p.hero.id));
+    enemyHeroes.forEach(h => h && picked.add(h.id));
     return picked;
   }, [alliedHeroes, enemyHeroes]);
 
   const handleSelectHero = (hero: any, team: 'allies' | 'enemies', index: number) => {
-    const setter = team === 'allies' ? setAlliedHeroes : setEnemyHeroes;
-    setter(current => {
-      const newTeam = [...current];
-      newTeam[index] = hero;
-      return newTeam;
-    });
+    if (team === 'allies') {
+      setAlliedHeroes(current => {
+        const newTeam = [...current];
+        newTeam[index] = { ...newTeam[index], hero: hero };
+        return newTeam;
+      });
+    } else {
+      setEnemyHeroes(current => {
+        const newTeam = [...current];
+        newTeam[index] = hero;
+        return newTeam;
+      });
+    }
   };
 
   const handleRemoveHero = (team: 'allies' | 'enemies', index: number) => {
-    const setter = team === 'allies' ? setAlliedHeroes : setEnemyHeroes;
-    setter(current => {
-      const newTeam = [...current];
-      newTeam[index] = null;
-      return newTeam;
-    });
+    if (team === 'allies') {
+      setAlliedHeroes(current => {
+        const newTeam = [...current];
+        newTeam[index] = { ...newTeam[index], hero: null };
+        return newTeam;
+      });
+    } else {
+      setEnemyHeroes(current => {
+        const newTeam = [...current];
+        newTeam[index] = null;
+        return newTeam;
+      });
+    }
   };
 
   const handleConfirmPick = () => {
     if (!selectedSuggestion) return;
-    const firstEmptyIndex = alliedHeroes.findIndex(h => h === null);
-    if (firstEmptyIndex !== -1) {
+
+    const targetIndex = alliedHeroes.findIndex(p => p.role === role && p.hero === null);
+
+    if (targetIndex !== -1) {
       setAlliedHeroes(currentAllies => {
         const newAllies = [...currentAllies];
-        newAllies[firstEmptyIndex] = selectedSuggestion;
+        newAllies[targetIndex] = { ...newAllies[targetIndex], hero: selectedSuggestion };
         return newAllies;
       });
+    } else {
+      const firstEmptyIndex = alliedHeroes.findIndex(p => p.hero === null);
+      if (firstEmptyIndex !== -1) {
+        setAlliedHeroes(currentAllies => {
+          const newAllies = [...currentAllies];
+          newAllies[firstEmptyIndex] = { ...newAllies[firstEmptyIndex], hero: selectedSuggestion };
+          return newAllies;
+        });
+      }
     }
     setSelectedSuggestion(null);
   };
@@ -109,15 +137,21 @@ const CounterPicker: React.FC = () => {
     setBannedSuggestionIds(prev => new Set(prev).add(heroId));
   };
 
-  const handleShowGuide = (hero: any) => {
-    setGuideHero(hero);
+  const handleShowGuide = (hero: any, role: string) => {
+    setGuidePick({ hero, role });
   };
 
-  const handleSuggestHeroes = async () => {
+  const handleSuggestHeroes = async (roleToFill: string) => {
+    if (!roleToFill) {
+      setError("No role selected to suggest for.");
+      return;
+    }
+
+    setRole(roleToFill);
     setIsSuggesting(true);
     setError(null);
 
-    const allies = alliedHeroes.filter(Boolean).map(h => h.localized_name);
+    const allies = alliedHeroes.filter(p => p.hero).map(p => `${p.hero.localized_name} (${p.role})`);
     const enemies = enemyHeroes.filter(Boolean).map(h => h.localized_name);
 
     if (enemies.length === 0) {
@@ -136,10 +170,10 @@ const CounterPicker: React.FC = () => {
 
     const prompt = `
       **You are a Dota 2 Counter Picker Assistant helping with Dota 2 drafting strategy **
-      **Goal:** Suggest the top 5 heroes for the **${role}** role for "Your Team" to counter the "Enemy Team" and synergize with existing allies in a **${rank}** rank game. This is for the **last pick** in the draft, meaning the suggestion should maximize counter potential against the enemy team while complementing the allied team's composition.
+      **Goal:** Suggest the top 5 heroes for the **${roleToFill}** role for "Your Team" to counter the "Enemy Team" and synergize with existing allies in a **${rank}** rank game. This is for the **last pick** in the draft, meaning the suggestion should maximize counter potential against the enemy team while complementing the allied team's composition.
       **Context:**
       - **Player Rank**: ${rank} (e.g., Herald prioritizes simple heroes with straightforward mechanics, Immortal emphasizes high-skill-ceiling heroes and meta strategies).
-      - **Role to Fill**: ${role} (${role === "Carry" ? "needs farm priority and scales well into late game" : role === "Midlaner" ? "controls tempo and excels in 1v1 matchups" : role === "Offlaner" ? "initiates fights and survives in tough lanes" : role === "Soft Support" ? "provides utility and roaming potential" : "focuses on team sustain and defensive abilities"}).
+      - **Role to Fill**: ${roleToFill} (${roleToFill === "Carry" ? "needs farm priority and scales well into late game" : roleToFill === "Midlaner" ? "controls tempo and excels in 1v1 matchups" : roleToFill === "Offlaner" ? "initiates fights and survives in tough lanes" : roleToFill === "Soft Support" ? "provides utility and roaming potential" : "focuses on team sustain and defensive abilities"}).
       - **Your Team (Allies)**: ${allies.join(', ') || 'None'} (consider their roles, attributes [Strength, Agility, Intelligence], and synergy potential, e.g., combo ultimates, lane support).
       - **Enemy Team**: ${enemies.join(', ')} (analyze their roles, attributes, and key threats, e.g., enemy carry or midlaner).
       - **Banned Heroes**: ${bannedHeroes.join(', ') || 'None'} (do not suggest these heroes).
@@ -173,6 +207,7 @@ const CounterPicker: React.FC = () => {
       \`\`\`
       `;
 
+    // console.log("Gemini Prompt for CounterPicker:", prompt);
     let text = '';
     try {
       const response = await fetch('/api/gemini', {
@@ -195,14 +230,14 @@ const CounterPicker: React.FC = () => {
       const data = await response.json();
 
       if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-        throw new Error("AI returned an empty response.");
+        throw new Error("Dota-Forger returned an empty response.");
       }
 
       text = data.candidates[0].content.parts[0].text;
 
       const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```|(\[[\s\S]*\])/);
       if (!jsonMatch) {
-        throw new Error("Could not find a JSON block in the AI's response.");
+        throw new Error("Could not find a JSON block in the Dota-Forger's response.");
       }
       const jsonString = jsonMatch[1] || jsonMatch[2];
       const parsedSuggestions = JSON.parse(jsonString);
@@ -218,7 +253,7 @@ const CounterPicker: React.FC = () => {
       if (text) {
         console.error("Raw text that failed parsing:", text);
       }
-      setError(`Failed to process AI suggestions. ${e.message}`);
+      setError(`Failed to process Dota-Forger suggestions. ${e.message}`);
     } finally {
       setIsSuggesting(false);
     }
@@ -258,11 +293,11 @@ const CounterPicker: React.FC = () => {
                 speed={0.4}
                 scrambleChars=".:!@#$%^&*()"
               >
-                AI-powered hero suggestions for your perfect draft
+                Smart hero suggestions to outdraft your opponents
               </ScrambledText>
             </header>
 
-            <CounterPickerFilters rank={rank} setRank={setRank} role={role} setRole={setRole} />
+            <CounterPickerFilters rank={rank} setRank={setRank} />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
               <TeamSection
@@ -275,6 +310,7 @@ const CounterPicker: React.FC = () => {
                 icon={<Shield className="h-6 w-6 text-blue-400" />}
                 isAlly={true}
                 onShowGuide={handleShowGuide}
+                onSuggest={handleSuggestHeroes}
               />
               <TeamSection
                 title="Enemy Team"
@@ -285,26 +321,8 @@ const CounterPicker: React.FC = () => {
                 pickedHeroIds={pickedHeroIds}
                 icon={<Swords className="h-6 w-6 text-red-400" />}
                 isAlly={false}
-                onShowGuide={() => {}}
+                onShowGuide={() => { }}
               />
-            </div>
-
-            <div className="mt-8 flex justify-center">
-              <Button
-                size="lg"
-                className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold text-lg py-6 px-8 rounded-lg transition-all duration-300 transform hover:scale-105"
-                onClick={handleSuggestHeroes}
-                disabled={isSuggesting || alliedHeroes.filter(Boolean).length === 5}
-              >
-                {isSuggesting ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Analyzing Draft...
-                  </>
-                ) : (
-                  "Suggest Heroes"
-                )}
-              </Button>
             </div>
 
             <SuggestionResults
@@ -331,11 +349,12 @@ const CounterPicker: React.FC = () => {
               </AlertDialogContent>
             </AlertDialog>
             <HeroGuide
-              hero={guideHero}
+              hero={guidePick?.hero}
+              role={guidePick?.role}
               allies={alliedHeroes}
               enemies={enemyHeroes}
-              open={!!guideHero}
-              onOpenChange={(isOpen) => !isOpen && setGuideHero(null)}
+              open={!!guidePick}
+              onOpenChange={(isOpen) => !isOpen && setGuidePick(null)}
             />
           </div>
         </div>
@@ -344,7 +363,7 @@ const CounterPicker: React.FC = () => {
   );
 };
 
-const CounterPickerFilters = ({ rank, setRank, role, setRole }) => (
+const CounterPickerFilters = ({ rank, setRank }) => (
   <Card className="bg-gray-800/50 border-gray-700 shadow-lg backdrop-blur-sm rounded-xl">
     <CardContent className="pt-6 flex flex-col sm:flex-row gap-4">
       <div className="flex-1">
@@ -360,19 +379,6 @@ const CounterPickerFilters = ({ rank, setRank, role, setRole }) => (
           </SelectContent>
         </Select>
       </div>
-      <div className="flex-1">
-        <label className="text-sm font-medium text-gray-200 mb-2 block">Role to Fill</label>
-        <Select value={role} onValueChange={setRole}>
-          <SelectTrigger className="bg-gray-700/50 border-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-gray-800 border-gray-700 text-white rounded-lg">
-            {ROLES.map(m => (
-              <SelectItem key={m} value={m} className="hover:bg-gray-700">{m}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
     </CardContent>
   </Card>
 );
@@ -382,7 +388,7 @@ const SuggestionResults = ({ suggestions, isLoading, error, onSuggestionClick, o
     return (
       <div className="mt-8 text-center">
         <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-400" />
-        <p className="mt-2 text-gray-300">AI is analyzing the draft...</p>
+        <p className="mt-2 text-gray-300">Dota-Forger is analyzing the draft...</p>
       </div>
     );
   }
@@ -396,12 +402,16 @@ const SuggestionResults = ({ suggestions, isLoading, error, onSuggestionClick, o
   if (suggestions.length === 0) {
     return (
       <div className="mt-8">
-        <Card className="bg-gray-800/50 border-gray-700 shadow-lg backdrop-blur-sm rounded-xl">
+        <Card className="h-[280px] bg-gray-800/50 border-gray-700 shadow-lg backdrop-blur-sm rounded-xl">
+
           <CardHeader>
             <CardTitle className="text-xl font-bold text-white">Suggested Picks</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-300">Select allied and enemy heroes, then click "Suggest Heroes" to see recommendations.</p>
+            <p className="text-gray-300">
+              Use <span className="text-red-400 font-semibold">'Suggest'</span> on empty slots to see optimal picks.
+              Want deeper insights? Just click a <span className="text-blue-400 font-semibold">picked hero</span> to view a personalized guide.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -412,7 +422,7 @@ const SuggestionResults = ({ suggestions, isLoading, error, onSuggestionClick, o
     <div className="mt-8">
       <Card className="bg-gray-800/50 border-gray-700 shadow-lg backdrop-blur-sm rounded-xl">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-white">AI-Powered Suggestions</CardTitle>
+          <CardTitle className="text-xl font-bold text-white">Dota-Forger Suggestions</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {suggestions.map((s, i) => (
@@ -432,8 +442,8 @@ const SuggestionResults = ({ suggestions, isLoading, error, onSuggestionClick, o
 
 const SuggestionCard = ({ suggestion, onSuggestionClick, onBanSuggestion, isBanned }) => {
   const cardClasses = `relative bg-gray-700/50 rounded-lg p-4 space-y-3 border-l-4 border-blue-500 transition-all duration-300 shadow-md ${isBanned
-      ? 'opacity-50 grayscale cursor-not-allowed'
-      : 'hover:bg-gray-700 transform hover:scale-105 cursor-pointer'
+    ? 'opacity-50 grayscale cursor-not-allowed'
+    : 'hover:bg-gray-700 transform hover:scale-105 cursor-pointer'
     }`;
 
   return (
@@ -485,17 +495,18 @@ const SuggestionCard = ({ suggestion, onSuggestionClick, onBanSuggestion, isBann
 
 interface TeamSectionProps {
   title: string;
-  heroes: (any | null)[];
+  heroes: any[];
   onSelectHero: (hero: any, index: number) => void;
   onRemoveHero: (index: number) => void;
   allHeroes: any[];
   pickedHeroIds: Set<number>;
   icon: React.ReactNode;
   isAlly: boolean;
-  onShowGuide: (hero: any) => void;
+  onShowGuide: (hero: any, role: string) => void;
+  onSuggest?: (role: string) => void;
 }
 
-const TeamSection: React.FC<TeamSectionProps> = ({ title, heroes, onSelectHero, onRemoveHero, allHeroes, pickedHeroIds, icon, isAlly, onShowGuide }) => (
+const TeamSection: React.FC<TeamSectionProps> = ({ title, heroes, onSelectHero, onRemoveHero, allHeroes, pickedHeroIds, icon, isAlly, onShowGuide, onSuggest }) => (
   <Card className="bg-gray-800/50 border-gray-700 shadow-lg backdrop-blur-sm rounded-xl">
     <CardHeader>
       <CardTitle className="flex items-center space-x-2 text-xl font-bold text-white">
@@ -504,16 +515,18 @@ const TeamSection: React.FC<TeamSectionProps> = ({ title, heroes, onSelectHero, 
       </CardTitle>
     </CardHeader>
     <CardContent className="grid grid-cols-5 gap-3">
-      {heroes.map((hero, index) => (
+      {heroes.map((item, index) => (
         <HeroSlot
           key={index}
-          hero={hero}
+          hero={isAlly ? item.hero : item}
+          role={isAlly ? item.role : ''}
           onSelect={(h) => onSelectHero(h, index)}
           onRemove={() => onRemoveHero(index)}
           allHeroes={allHeroes}
           pickedHeroIds={pickedHeroIds}
           isAlly={isAlly}
           onShowGuide={onShowGuide}
+          onSuggest={isAlly ? onSuggest : undefined}
         />
       ))}
     </CardContent>
@@ -522,24 +535,36 @@ const TeamSection: React.FC<TeamSectionProps> = ({ title, heroes, onSelectHero, 
 
 interface HeroSlotProps {
   hero: any | null;
+  role: string;
   onSelect: (hero: any) => void;
   onRemove: () => void;
   allHeroes: any[];
   pickedHeroIds: Set<number>;
   isAlly: boolean;
-  onShowGuide: (hero: any) => void;
+  onShowGuide: (hero: any, role: string) => void;
+  onSuggest?: (role: string) => void;
 }
 
-const HeroSlot: React.FC<HeroSlotProps> = ({ hero, onSelect, onRemove, allHeroes, pickedHeroIds, isAlly, onShowGuide }) => {
+const HeroSlot: React.FC<HeroSlotProps> = ({
+  hero,
+  role,
+  onSelect,
+  onRemove,
+  allHeroes,
+  pickedHeroIds,
+  isAlly,
+  onShowGuide,
+  onSuggest,
+}) => {
   const [open, setOpen] = useState(false);
 
   if (hero) {
     return (
-      <div className="relative group">
+      <div className="relative group text-center">
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              onClick={() => isAlly && onShowGuide(hero)}
+              onClick={() => isAlly && onShowGuide(hero, role)}
               disabled={!isAlly}
               className="disabled:cursor-not-allowed"
             >
@@ -551,10 +576,11 @@ const HeroSlot: React.FC<HeroSlotProps> = ({ hero, onSelect, onRemove, allHeroes
           </TooltipTrigger>
           {isAlly && (
             <TooltipContent>
-              <p>Click to see AI-generated guide</p>
+              <p>Click to see Dota-Forger's guide for {role}</p>
             </TooltipContent>
           )}
         </Tooltip>
+        {role && <p className="text-xs text-gray-400 mt-1 truncate font-semibold">{role}</p>}
         <button
           onClick={onRemove}
           className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-600 rounded-full p-1.5 text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-700"
@@ -566,21 +592,31 @@ const HeroSlot: React.FC<HeroSlotProps> = ({ hero, onSelect, onRemove, allHeroes
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <button className="h-20 w-20 bg-gray-700/50 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-all duration-300 transform hover:scale-105">
-          <Plus className="h-8 w-8 text-gray-400" />
-        </button>
-      </DialogTrigger>
-      <HeroPicker
-        allHeroes={allHeroes}
-        pickedHeroIds={pickedHeroIds}
-        onSelectHero={(h) => {
-          onSelect(h);
-          setOpen(false);
-        }}
-      />
-    </Dialog>
+    <div className="text-center">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <button className="h-20 w-20 bg-gray-700/50 border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-all duration-300 transform hover:scale-105">
+            <Plus className="h-8 w-8 text-gray-400" />
+          </button>
+        </DialogTrigger>
+        <HeroPicker
+          allHeroes={allHeroes}
+          pickedHeroIds={pickedHeroIds}
+          onSelectHero={(h) => {
+            onSelect(h);
+            setOpen(false);
+          }}
+          role={role}
+          onSuggest={(roleForSuggest) => {
+            if (onSuggest) {
+              onSuggest(roleForSuggest);
+            }
+            setOpen(false);
+          }}
+        />
+      </Dialog>
+      {role && <p className="text-xs text-gray-400 mt-1 truncate font-semibold">{role}</p>}
+    </div>
   );
 };
 
@@ -588,9 +624,17 @@ interface HeroPickerProps {
   allHeroes: any[];
   pickedHeroIds: Set<number>;
   onSelectHero: (hero: any) => void;
+  role: string;
+  onSuggest: (role: string) => void;
 }
 
-const HeroPicker: React.FC<HeroPickerProps> = ({ allHeroes, pickedHeroIds, onSelectHero }) => {
+const HeroPicker: React.FC<HeroPickerProps> = ({
+  allHeroes,
+  pickedHeroIds,
+  onSelectHero,
+  role,
+  onSuggest,
+}) => {
   const [search, setSearch] = useState('');
   const [attribute, setAttribute] = useState<'all' | 'str' | 'agi' | 'int'>('all');
 
@@ -605,9 +649,15 @@ const HeroPicker: React.FC<HeroPickerProps> = ({ allHeroes, pickedHeroIds, onSel
   return (
     <DialogContent className="max-w-4xl bg-gray-900/95 border-gray-700 text-white rounded-xl shadow-xl">
       <DialogHeader>
-        <DialogTitle className="text-2xl font-bold text-white">Select a Hero</DialogTitle>
+        <DialogTitle className="text-2xl font-bold text-white">Select a Hero for {role}</DialogTitle>
       </DialogHeader>
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        {onSuggest && (
+          <Button onClick={() => onSuggest(role)} className="bg-blue-600 hover:bg-blue-700">
+            <BrainCircuit className="h-4 w-4" />
+            <span className="ml-2"> Suggest for {role}</span>
+          </Button>
+        )}
         <Input
           placeholder="Search heroes..."
           value={search}
@@ -615,20 +665,22 @@ const HeroPicker: React.FC<HeroPickerProps> = ({ allHeroes, pickedHeroIds, onSel
           className="bg-gray-800/50 border-gray-600 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500"
         />
       </div>
-      <div className="max-h-[60vh] overflow-y-auto grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3 pr-2">
-        {filteredHeroes.map(hero => (
-          <button
-            key={hero.id}
-            onClick={() => onSelectHero(hero)}
-            className="space-y-1 group transition-all duration-300"
-          >
-            <Avatar className="h-16 w-16 rounded-lg border-2 border-transparent group-hover:border-blue-500 transition-all duration-200">
-              <AvatarImage src={getHeroImageUrl(hero)} />
-              <AvatarFallback className="bg-gray-600 text-white">{hero.localized_name.substring(0, 2)}</AvatarFallback>
-            </Avatar>
-            <p className="text-xs text-center text-gray-300 group-hover:text-white transition-colors truncate">{hero.localized_name}</p>
-          </button>
-        ))}
+      <div className="max-h-[60vh] overflow-y-auto pr-2">
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3">
+          {filteredHeroes.map(hero => (
+            <button
+              key={hero.id}
+              onClick={() => onSelectHero(hero)}
+              className="space-y-1 group transition-all duration-300"
+            >
+              <Avatar className="h-16 w-16 rounded-lg border-2 border-transparent group-hover:border-blue-500 transition-all duration-200">
+                <AvatarImage src={getHeroImageUrl(hero)} />
+                <AvatarFallback className="bg-gray-600 text-white">{hero.localized_name.substring(0, 2)}</AvatarFallback>
+              </Avatar>
+              <p className="text-xs text-center text-gray-300 group-hover:text-white transition-colors truncate">{hero.localized_name}</p>
+            </button>
+          ))}
+        </div>
       </div>
     </DialogContent>
   );
