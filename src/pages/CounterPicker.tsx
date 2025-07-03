@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -135,30 +135,42 @@ const CounterPicker: React.FC = () => {
 
     const prompt = `
       **Dota 2 Counter Picker Assistant**
-      **Goal:** Suggest the top 5 best heroes for the **${role}** role for "Your Team" to counter the "Enemy Team" and synergize with existing allies. This is for the last pick of the draft.
+      **Goal:** Suggest the top 5 heroes for the **${role}** role for "Your Team" to counter the "Enemy Team" and synergize with existing allies in a **${rank}** rank game. This is for the **last pick** in the draft, meaning the suggestion should maximize counter potential against the enemy team while complementing the allied team's composition.
       **Context:**
-      - Player Rank: ${rank}
-      - Role to Fill: ${role}
-      - Your Team (Allies): ${allies.join(', ') || 'None'}
-      - Enemy Team: ${enemies.join(', ')}
-      - Banned Heroes: ${bannedHeroes.join(', ') || 'None'}
-      - Available Heroes: ${unpickedHeroes.join(', ')}
-      **Task:** Return a JSON array of the top 5 hero suggestions. For each hero, provide:
-      1.  "heroName": The name of the suggested hero.
-      2.  "advantageScore": A number from 0-100 indicating how good the pick is.
-      3.  "counterStrategy": A brief explanation of why this hero counters the enemy team.
-      4.  "synergyStrategy": A brief explanation of how this hero synergizes with the allied team.
-      5.  "roles": An array of strings for the hero's primary roles (e.g., "Carry", "Support").
-      **Output Format:** Your response MUST be a valid JSON array string inside a \`\`\`json code block. Do not include any other text before or after the code block.
-      **Example of a single hero entry in the array:**
-      {
-        "heroName": "Silencer",
-        "advantageScore": 85,
-        "counterStrategy": "Global Silence interrupts key enemy spells. Arcane Curse punishes spell-heavy lineups.",
-        "synergyStrategy": "Global Silence sets up teamfights for allies like Axe or Magnus to initiate.",
-        "roles": ["Support", "Disabler"]
-      }
-    `;
+      - **Player Rank**: ${rank} (e.g., Herald prioritizes simple heroes with straightforward mechanics, Immortal emphasizes high-skill-ceiling heroes and meta strategies).
+      - **Role to Fill**: ${role} (${role === "Carry" ? "needs farm priority and scales well into late game" : role === "Midlaner" ? "controls tempo and excels in 1v1 matchups" : role === "Offlaner" ? "initiates fights and survives in tough lanes" : role === "Soft Support" ? "provides utility and roaming potential" : "focuses on team sustain and defensive abilities"}).
+      - **Your Team (Allies)**: ${allies.join(', ') || 'None'} (consider their roles, attributes [Strength, Agility, Intelligence], and synergy potential, e.g., combo ultimates, lane support).
+      - **Enemy Team**: ${enemies.join(', ')} (analyze their roles, attributes, and key threats, e.g., enemy carry or midlaner).
+      - **Banned Heroes**: ${bannedHeroes.join(', ') || 'None'} (do not suggest these heroes).
+      - **Available Heroes**: ${unpickedHeroes.join(', ')} (only suggest heroes from this list).
+      **Task:** Return a JSON array of exactly 5 hero suggestions. For each hero, provide:
+      1. **heroName**: The exact name of the suggested hero from the available heroes list.
+      2. **advantageScore**: A number from 0-100 indicating how effective the hero is (based on counter strength and synergy; higher scores for heroes that counter key enemy threats and synergize well).
+      3. **counterStrategy**: A 1-2 sentence explanation of why this hero counters the enemy team (e.g., "Silencer's Global Silence disrupts enemy spellcasters like Storm Spirit" or "Axe's high armor counters physical damage dealers like Phantom Assassin").
+      4. **synergyStrategy**: A 1-2 sentence explanation of how this hero synergizes with allies (e.g., "Enigma's Black Hole sets up teamfights for Magnus' Reverse Polarity" or "Oracle's False Promise enhances Faceless Void's survivability in Chronosphere").
+      5. **roles**: An array of the hero's primary roles (e.g., ["Carry", "Durable"], ["Support", "Disabler"]).
+      6. **primaryAttribute**: The hero's primary attribute ("Strength", "Agility", or "Intelligence").
+      **Constraints:**
+      - Only suggest heroes from the **Available Heroes** list.
+      - Do not suggest heroes in the **Banned Heroes** list or already picked heroes.
+      - Prioritize heroes that counter the enemy team's key threats (e.g., their carry or midlaner) while maintaining synergy with allies.
+      - Consider rank-specific playstyles: simpler heroes for lower ranks (Herald, Guardian), meta or high-skill heroes for higher ranks (Divine, Immortal).
+      - Balance countering enemies (e.g., silences vs. spellcasters, armor vs. physical damage) and synergy with allies (e.g., setup for ultimates, lane compatibility).
+      - Avoid generic suggestions unless justified by specific matchups (e.g., don't default to overpicked heroes like Sniper unless they strongly counter the enemy).
+      **Output Format:** A valid JSON array string inside a \`\`\`json code block. Do not include any text before or after the code block. Each entry must follow this format:
+      \`\`\`json
+      [
+        {
+          "heroName": "Silencer",
+          "advantageScore": 85,
+          "counterStrategy": "Global Silence interrupts Storm Spirit and Lina's high-damage spells.",
+          "synergyStrategy": "Arcane Curse enhances Skywrath Mage's spell damage in lane.",
+          "roles": ["Support", "Disabler"],
+          "primaryAttribute": "Intelligence"
+        }
+      ]
+      \`\`\`
+      `;
 
     let text = '';
     try {
@@ -178,22 +190,22 @@ const CounterPicker: React.FC = () => {
         }
         throw new Error(`API request failed. ${errorDetails}`);
       }
-      
+
       const data = await response.json();
-      
+
       if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
         throw new Error("AI returned an empty response.");
       }
-      
+
       text = data.candidates[0].content.parts[0].text;
-      
+
       const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```|(\[[\s\S]*\])/);
       if (!jsonMatch) {
-          throw new Error("Could not find a JSON block in the AI's response.");
+        throw new Error("Could not find a JSON block in the AI's response.");
       }
       const jsonString = jsonMatch[1] || jsonMatch[2];
       const parsedSuggestions = JSON.parse(jsonString);
-      
+
       const enrichedSuggestions = parsedSuggestions.map((suggestion: any) => {
         const heroData = heroNameMap[suggestion.heroName.toLowerCase()];
         return { ...suggestion, ...heroData };
@@ -214,7 +226,7 @@ const CounterPicker: React.FC = () => {
   return (
     <TooltipProvider>
       <div className="relative min-h-screen">
-        <SplashCursor />
+        {/* <SplashCursor /> */}
         {/* Video Background */}
         <video
           autoPlay
@@ -229,7 +241,7 @@ const CounterPicker: React.FC = () => {
         <div className="relative z-20 min-h-screen bg-gradient-to-b from-gray-900/50 to-gray-800/80 p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             <header className="mb-8 text-center">
-              <ScrambledText 
+              <ScrambledText
                 className="text-4xl sm:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-red-400 m-0 max-w-none"
                 radius={150}
                 duration={0.8}
@@ -238,7 +250,7 @@ const CounterPicker: React.FC = () => {
               >
                 Dota 2 Counter Picker
               </ScrambledText>
-              <ScrambledText 
+              <ScrambledText
                 className="mt-2 text-lg text-gray-300 m-0 max-w-none"
                 radius={80}
                 duration={0.6}
@@ -252,31 +264,31 @@ const CounterPicker: React.FC = () => {
             <CounterPickerFilters rank={rank} setRank={setRank} role={role} setRole={setRole} />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-              <TeamSection 
-                title="Your Team" 
-                heroes={alliedHeroes} 
-                onSelectHero={(h, i) => handleSelectHero(h, 'allies', i)} 
-                onRemoveHero={(i) => handleRemoveHero('allies', i)} 
-                allHeroes={allHeroes} 
-                pickedHeroIds={pickedHeroIds} 
-                icon={<Shield className="h-6 w-6 text-blue-400" />} 
+              <TeamSection
+                title="Your Team"
+                heroes={alliedHeroes}
+                onSelectHero={(h, i) => handleSelectHero(h, 'allies', i)}
+                onRemoveHero={(i) => handleRemoveHero('allies', i)}
+                allHeroes={allHeroes}
+                pickedHeroIds={pickedHeroIds}
+                icon={<Shield className="h-6 w-6 text-blue-400" />}
               />
-              <TeamSection 
-                title="Enemy Team" 
-                heroes={enemyHeroes} 
-                onSelectHero={(h, i) => handleSelectHero(h, 'enemies', i)} 
-                onRemoveHero={(i) => handleRemoveHero('enemies', i)} 
-                allHeroes={allHeroes} 
-                pickedHeroIds={pickedHeroIds} 
-                icon={<Swords className="h-6 w-6 text-red-400" />} 
+              <TeamSection
+                title="Enemy Team"
+                heroes={enemyHeroes}
+                onSelectHero={(h, i) => handleSelectHero(h, 'enemies', i)}
+                onRemoveHero={(i) => handleRemoveHero('enemies', i)}
+                allHeroes={allHeroes}
+                pickedHeroIds={pickedHeroIds}
+                icon={<Swords className="h-6 w-6 text-red-400" />}
               />
             </div>
 
             <div className="mt-8 flex justify-center">
-              <Button 
-                size="lg" 
-                className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold text-lg py-6 px-8 rounded-lg transition-all duration-300 transform hover:scale-105" 
-                onClick={handleSuggestHeroes} 
+              <Button
+                size="lg"
+                className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold text-lg py-6 px-8 rounded-lg transition-all duration-300 transform hover:scale-105"
+                onClick={handleSuggestHeroes}
                 disabled={isSuggesting}
               >
                 {isSuggesting ? (
@@ -290,9 +302,9 @@ const CounterPicker: React.FC = () => {
               </Button>
             </div>
 
-            <SuggestionResults 
-              suggestions={suggestions} 
-              isLoading={isSuggesting} 
+            <SuggestionResults
+              suggestions={suggestions}
+              isLoading={isSuggesting}
               error={error}
               onSuggestionClick={setSelectedSuggestion}
               onBanSuggestion={handleBanSuggestion}
@@ -392,10 +404,10 @@ const SuggestionResults = ({ suggestions, isLoading, error, onSuggestionClick, o
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {suggestions.map((s, i) => (
-            <SuggestionCard 
-              key={i} 
-              suggestion={s} 
-              onSuggestionClick={onSuggestionClick} 
+            <SuggestionCard
+              key={i}
+              suggestion={s}
+              onSuggestionClick={onSuggestionClick}
               onBanSuggestion={onBanSuggestion}
               isBanned={bannedSuggestionIds.has(s.id)}
             />
@@ -407,11 +419,10 @@ const SuggestionResults = ({ suggestions, isLoading, error, onSuggestionClick, o
 };
 
 const SuggestionCard = ({ suggestion, onSuggestionClick, onBanSuggestion, isBanned }) => {
-  const cardClasses = `relative bg-gray-700/50 rounded-lg p-4 space-y-3 border-l-4 border-blue-500 transition-all duration-300 shadow-md ${
-    isBanned 
-      ? 'opacity-50 grayscale cursor-not-allowed' 
+  const cardClasses = `relative bg-gray-700/50 rounded-lg p-4 space-y-3 border-l-4 border-blue-500 transition-all duration-300 shadow-md ${isBanned
+      ? 'opacity-50 grayscale cursor-not-allowed'
       : 'hover:bg-gray-700 transform hover:scale-105 cursor-pointer'
-  }`;
+    }`;
 
   return (
     <Tooltip>
@@ -508,7 +519,7 @@ interface HeroSlotProps {
 
 const HeroSlot: React.FC<HeroSlotProps> = ({ hero, onSelect, onRemove, allHeroes, pickedHeroIds }) => {
   const [open, setOpen] = useState(false);
-  
+
   if (hero) {
     return (
       <div className="relative group">
@@ -578,9 +589,9 @@ const HeroPicker: React.FC<HeroPickerProps> = ({ allHeroes, pickedHeroIds, onSel
       </div>
       <div className="max-h-[60vh] overflow-y-auto grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3 pr-2">
         {filteredHeroes.map(hero => (
-          <button 
-            key={hero.id} 
-            onClick={() => onSelectHero(hero)} 
+          <button
+            key={hero.id}
+            onClick={() => onSelectHero(hero)}
             className="space-y-1 group transition-all duration-300"
           >
             <Avatar className="h-16 w-16 rounded-lg border-2 border-transparent group-hover:border-blue-500 transition-all duration-200">
