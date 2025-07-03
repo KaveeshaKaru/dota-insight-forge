@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
   const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY;
   if (!GEMINI_API_KEY) {
-    return res.status(500).json({ error: 'AI API key not configured on the server.' });
+    return res.status(500).json({ error: 'Dota-Forger API key not configured on the server.' });
   }
 
   let prompt;
@@ -40,8 +40,8 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('AI API Error:', errorData);
-      return res.status(response.status).json({ error: `AI API request failed: ${response.statusText}`, details: errorData });
+      console.error('Dota-Forger API Error:', errorData);
+      return res.status(response.status).json({ error: `Dota-Forger API request failed: ${response.statusText}`, details: errorData });
     }
 
     const data = await response.json();
