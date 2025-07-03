@@ -26,6 +26,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { heroService } from '@/services/hero-service';
 import ScrambledText from '@/components/ScrambleText';
 import SplashCursor from '@/components/SplashCursor';
+import HeroGuide from '@/components/HeroGuide';
 
 const RANKS = ["Herald", "Guardian", "Crusader", "Archon", "Legend", "Ancient", "Divine", "Immortal"];
 const ROLES = ["Carry", "Midlaner", "Offlaner", "Soft Support", "Hard Support"];
@@ -39,7 +40,7 @@ const getHeroImageUrl = (hero: any) => {
 // Main Component
 const CounterPicker: React.FC = () => {
   const [allHeroes, setAllHeroes] = useState<any[]>([]);
-  const [alliedHeroes, setAlliedHeroes] = useState<(any | null)[]>(Array(4).fill(null));
+  const [alliedHeroes, setAlliedHeroes] = useState<(any | null)[]>(Array(5).fill(null));
   const [enemyHeroes, setEnemyHeroes] = useState<(any | null)[]>(Array(5).fill(null));
   const [heroNameMap, setHeroNameMap] = useState<{ [key: string]: any }>({});
   const [rank, setRank] = useState("Legend");
@@ -49,6 +50,7 @@ const CounterPicker: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedSuggestion, setSelectedSuggestion] = useState<any | null>(null);
   const [bannedSuggestionIds, setBannedSuggestionIds] = useState<Set<number>>(new Set());
+  const [guideHero, setGuideHero] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchHeroes = async () => {
@@ -107,6 +109,10 @@ const CounterPicker: React.FC = () => {
     setBannedSuggestionIds(prev => new Set(prev).add(heroId));
   };
 
+  const handleShowGuide = (hero: any) => {
+    setGuideHero(hero);
+  };
+
   const handleSuggestHeroes = async () => {
     setIsSuggesting(true);
     setError(null);
@@ -116,11 +122,6 @@ const CounterPicker: React.FC = () => {
 
     if (enemies.length === 0) {
       setError("Please select at least one enemy hero to generate suggestions.");
-      setIsSuggesting(false);
-      return;
-    }
-    if (allies.length === 0) {
-      setError("Please select at least one allied hero for synergy analysis.");
       setIsSuggesting(false);
       return;
     }
@@ -209,7 +210,7 @@ const CounterPicker: React.FC = () => {
       const enrichedSuggestions = parsedSuggestions.map((suggestion: any) => {
         const heroData = heroNameMap[suggestion.heroName.toLowerCase()];
         return { ...suggestion, ...heroData };
-      }).filter((s: any) => s.id);
+      }).filter((s: any) => s.id && !pickedHeroIds.has(s.id));
 
       setSuggestions(enrichedSuggestions);
     } catch (e: any) {
@@ -272,6 +273,8 @@ const CounterPicker: React.FC = () => {
                 allHeroes={allHeroes}
                 pickedHeroIds={pickedHeroIds}
                 icon={<Shield className="h-6 w-6 text-blue-400" />}
+                isAlly={true}
+                onShowGuide={handleShowGuide}
               />
               <TeamSection
                 title="Enemy Team"
@@ -281,6 +284,8 @@ const CounterPicker: React.FC = () => {
                 allHeroes={allHeroes}
                 pickedHeroIds={pickedHeroIds}
                 icon={<Swords className="h-6 w-6 text-red-400" />}
+                isAlly={false}
+                onShowGuide={() => {}}
               />
             </div>
 
@@ -289,7 +294,7 @@ const CounterPicker: React.FC = () => {
                 size="lg"
                 className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold text-lg py-6 px-8 rounded-lg transition-all duration-300 transform hover:scale-105"
                 onClick={handleSuggestHeroes}
-                disabled={isSuggesting}
+                disabled={isSuggesting || alliedHeroes.filter(Boolean).length === 5}
               >
                 {isSuggesting ? (
                   <>
@@ -325,6 +330,13 @@ const CounterPicker: React.FC = () => {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+            <HeroGuide
+              hero={guideHero}
+              allies={alliedHeroes}
+              enemies={enemyHeroes}
+              open={!!guideHero}
+              onOpenChange={(isOpen) => !isOpen && setGuideHero(null)}
+            />
           </div>
         </div>
       </div>
@@ -479,9 +491,11 @@ interface TeamSectionProps {
   allHeroes: any[];
   pickedHeroIds: Set<number>;
   icon: React.ReactNode;
+  isAlly: boolean;
+  onShowGuide: (hero: any) => void;
 }
 
-const TeamSection: React.FC<TeamSectionProps> = ({ title, heroes, onSelectHero, onRemoveHero, allHeroes, pickedHeroIds, icon }) => (
+const TeamSection: React.FC<TeamSectionProps> = ({ title, heroes, onSelectHero, onRemoveHero, allHeroes, pickedHeroIds, icon, isAlly, onShowGuide }) => (
   <Card className="bg-gray-800/50 border-gray-700 shadow-lg backdrop-blur-sm rounded-xl">
     <CardHeader>
       <CardTitle className="flex items-center space-x-2 text-xl font-bold text-white">
@@ -498,13 +512,10 @@ const TeamSection: React.FC<TeamSectionProps> = ({ title, heroes, onSelectHero, 
           onRemove={() => onRemoveHero(index)}
           allHeroes={allHeroes}
           pickedHeroIds={pickedHeroIds}
+          isAlly={isAlly}
+          onShowGuide={onShowGuide}
         />
       ))}
-      {title === "Your Team" && (
-        <div className="h-20 w-20 bg-gray-700/50 rounded-lg flex items-center justify-center border-2 border-dashed border-blue-500 transition-all duration-300 hover:bg-gray-700" title="This is the hero you need to pick">
-          <BrainCircuit className="h-8 w-8 text-blue-400" />
-        </div>
-      )}
     </CardContent>
   </Card>
 );
@@ -515,18 +526,35 @@ interface HeroSlotProps {
   onRemove: () => void;
   allHeroes: any[];
   pickedHeroIds: Set<number>;
+  isAlly: boolean;
+  onShowGuide: (hero: any) => void;
 }
 
-const HeroSlot: React.FC<HeroSlotProps> = ({ hero, onSelect, onRemove, allHeroes, pickedHeroIds }) => {
+const HeroSlot: React.FC<HeroSlotProps> = ({ hero, onSelect, onRemove, allHeroes, pickedHeroIds, isAlly, onShowGuide }) => {
   const [open, setOpen] = useState(false);
 
   if (hero) {
     return (
       <div className="relative group">
-        <Avatar className="h-20 w-20 border-2 border-gray-600 rounded-lg transition-all duration-300 group-hover:scale-105">
-          <AvatarImage src={getHeroImageUrl(hero)} alt={hero.localized_name} />
-          <AvatarFallback className="bg-gray-600 text-white">{hero.localized_name.substring(0, 2)}</AvatarFallback>
-        </Avatar>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => isAlly && onShowGuide(hero)}
+              disabled={!isAlly}
+              className="disabled:cursor-not-allowed"
+            >
+              <Avatar className="h-20 w-20 border-2 border-gray-600 rounded-lg transition-all duration-300 group-hover:scale-105 group-hover:border-blue-500">
+                <AvatarImage src={getHeroImageUrl(hero)} alt={hero.localized_name} />
+                <AvatarFallback className="bg-gray-600 text-white">{hero.localized_name.substring(0, 2)}</AvatarFallback>
+              </Avatar>
+            </button>
+          </TooltipTrigger>
+          {isAlly && (
+            <TooltipContent>
+              <p>Click to see AI-generated guide</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
         <button
           onClick={onRemove}
           className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-600 rounded-full p-1.5 text-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-700"
