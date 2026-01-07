@@ -6,9 +6,9 @@ import { X, Swords, Shield, Plus, Loader2, BarChart, BrainCircuit, Ban } from 'l
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
@@ -35,7 +35,7 @@ const ROLES = ["Carry", "Midlaner", "Offlaner", "Soft Support", "Hard Support"];
 const getHeroImageUrl = (hero: any) => {
   if (!hero || !hero.name) return '';
   const internalHeroName = hero.name.replace('npc_dota_hero_', '');
-  // Using Steam CDN which has proper SSL certificates
+  // Use Steam CDN as alternative to avoid SSL certificate issues
   return `https://steamcdn-a.akamaihd.net/apps/dota2/images/heroes/${internalHeroName}_full.png`;
 };
 
@@ -653,7 +653,7 @@ const HeroPicker: React.FC<HeroPickerProps> = ({
       <DialogHeader>
         <DialogTitle className="text-2xl font-bold text-white">Select a Hero for {role}</DialogTitle>
         <DialogDescription className="text-gray-400">
-          Search and select a hero to add to your team, or use AI suggestions for optimal picks.
+          Choose a hero from the list below or use AI suggestions to find the best pick for this role.
         </DialogDescription>
       </DialogHeader>
       <div className="flex flex-col sm:flex-row gap-4 mb-4">

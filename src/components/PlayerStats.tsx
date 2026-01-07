@@ -142,7 +142,7 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({ players }) => {
           <div className="grid grid-cols-6 gap-2">
             {items.map((itemId) => {
               const item = itemMapById[itemId];
-              const itemImageUrl = item?.img ? `https://steamcdn-a.akamaihd.net${item.img}` : '';
+              const itemImageUrl = item?.img ? `https://cdn.dota2.com${item.img}` : '';
               const components = item?.components?.map(name => itemMapByName[name]).filter(Boolean) || [];
 
               return (
@@ -160,7 +160,7 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({ players }) => {
                           <div>
                             <h3 className="text-lg font-bold">{item.dname}</h3>
                             <div className="flex items-center space-x-2 text-yellow-400">
-                              <img src="https://steamcdn-a.akamaihd.net/apps/dota2/images/tooltips/gold.png" alt="gold" className="w-5 h-5" />
+                              <img src="https://cdn.dota2.com/apps/dota2/images/tooltips/gold.png" alt="gold" className="w-5 h-5" />
                               <span>{item.cost}</span>
                             </div>
                           </div>
@@ -190,7 +190,7 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({ players }) => {
                               <h4 className="text-xs text-gray-400 mb-2">Components:</h4>
                               <div className="flex space-x-2">
                                 {components.map(comp => (
-                                  <img key={comp.id} src={`https://steamcdn-a.akamaihd.net${comp.img}`} title={comp.dname} className="w-10 h-8 object-contain bg-slate-800 rounded" />
+                                  <img key={comp.id} src={`https://cdn.dota2.com${comp.img}`} title={comp.dname} className="w-10 h-8 object-contain bg-slate-800 rounded" />
                                 ))}
                               </div>
                             </div>
