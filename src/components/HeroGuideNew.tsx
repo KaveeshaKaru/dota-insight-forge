@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Loader2, Swords, Shield, Star, Skull, BookOpen } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface HeroGuideProps {
   hero: any;
@@ -11,7 +12,7 @@ interface HeroGuideProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const HeroGuide: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open, onOpenChange }) => {
+const HeroGuideNew: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open, onOpenChange }) => {
   const [guide, setGuide] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +27,48 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open
         const alliedNames = allies.filter(p => p.hero).map(p => `${p.hero.localized_name} (${p.role})`);
         const enemyNames = enemies.filter(Boolean).map(h => h.localized_name);
 
+        let openDotaContext = '';
+        try {
+          const [matchupRes, itemRes] = await Promise.all([
+            fetch(`https://api.opendota.com/api/heroes/${hero.id}/matchups`),
+            fetch(`https://api.opendota.com/api/heroes/${hero.id}/itemPopularity`)
+          ]);
+
+          if (matchupRes.ok) {
+            const matchupStats = await matchupRes.json();
+            const topCounters = matchupStats
+              .filter(enemy => enemyNames.includes(enemy.hero_localized_name))
+              .sort((a, b) => (a.wins / a.games_played) - (b.wins / b.games_played))
+              .slice(0, 3);
+
+            if (topCounters.length > 0) {
+              const topCountersInfo = topCounters.map(c => `${c.hero_localized_name} (${((c.wins / c.games_played) * 100).toFixed(0)}% winrate vs them)`).join(', ');
+              openDotaContext += `- **Historical Matchups vs Enemies**: ${hero.localized_name} struggles against: ${topCountersInfo}.\n`;
+            }
+          }
+
+          if (itemRes.ok) {
+            const itemStats = await itemRes.json();
+            const allPopularItems = {
+              ...itemStats.early_game_items,
+              ...itemStats.mid_game_items,
+              ...itemStats.late_game_items,
+            };
+
+            const topItems = Object.entries(allPopularItems)
+              .sort(([, a], [, b]) => Number(b) - Number(a))
+              .slice(0, 5)
+              .map(([item]) => item.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '));
+
+            if (topItems.length > 0) {
+              openDotaContext += `- **Most Popular Items**: ${topItems.join(', ')}.\n`;
+            }
+          }
+        } catch (e) {
+          console.error("Failed to fetch OpenDota data", e);
+          openDotaContext = 'Failed to fetch real-time data from OpenDota.';
+        }
+
         const prompt = `
           You are a Dota 2 expert coach and analyst.
 
@@ -35,13 +78,16 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open
           - Selected Hero: ${hero.localized_name}
           - Role: ${role}
           - Allied Team Picks: ${alliedNames.join(', ') || 'None'}
-          - Enemy Team Picks: ${enemyNames.join(', ') || 'None'} (Roles are unknown)
+          - Enemy Team Picks: ${enemyNames.join(', ') || 'None'}
+
+          **Extra Data from OpenDota API (use this to inform your suggestions):**
+          ${openDotaContext || 'N/A'}
 
           Instructions:
-          - Your response must be a valid single JSON object inside a \`\`\`json code block. Do not include any text or markdown outside this block.
-          - Tailor all guidance to this specific draft and matchup.
+          - Your response must be a valid single JSON object. Do not include any text or markdown outside the JSON object.
+          - Tailor all guidance to this specific draft and matchup. Use the OpenDota data to provide statistically-backed advice. For example, if ${hero.localized_name} has a low winrate against an enemy, suggest items or strategies to mitigate that.
           - Avoid generic advice. All recommendations must be matchup-specific and practical.
-          - Be concise: 3-4 bullet points per section max.
+          - Be concise: 4-5 bullet points per section max.
 
           Required JSON Structure:
 
@@ -84,12 +130,12 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open
           - Be specific with item and skill justifications, explaining *why* they are good in this specific role and against the enemy team composition.
           - Mention counterplay and synergy based on allied and enemy picks.
           - Use accurate Dota 2 item/spell names only.
-          - Your response must be 100% valid JSON in a single \`\`\`json code block. No extra commentary.
+          - Your response must be 100% valid JSON. No extra commentary.
         `;
 
-        console.log("Gemini Prompt for HeroGuide:", prompt);
+        // console.log("OpenAI Prompt for HeroGuide:", prompt);
         try {
-          const response = await fetch('/api/gemini', {
+          const response = await fetch('/api/openai', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt }),
@@ -100,18 +146,12 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open
           }
 
           const data = await response.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (!text) {
+          const content = data.choices?.[0]?.message?.content;
+          if (!content) {
             throw new Error("Dota-Forger returned an empty response.");
           }
 
-          const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```|({[\s\S]*})/);
-          if (!jsonMatch) {
-            throw new Error("Could not find a JSON block in the Dota-Forger's response.");
-          }
-          const jsonString = jsonMatch[1] || jsonMatch[2];
-
-          setGuide(JSON.parse(jsonString));
+          setGuide(JSON.parse(content));
         } catch (e: any) {
           setError(e.message);
         } finally {
@@ -143,16 +183,12 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open
               </div>
             </SheetTitle>
             <SheetDescription className="text-gray-400">
-              Dota-Forger's guide tailored to the current matchup and role.
+            Dota-Forger's guide tailored to the current matchup and role.
             </SheetDescription>
           </SheetHeader>
         )}
         <div className="py-4 space-y-6">
-          {isLoading && (
-            <div className="flex justify-center items-center h-64">
-              <Loader2 className="h-12 w-12 animate-spin text-blue-400" />
-            </div>
-          )}
+          {isLoading && <GuideSkeleton />}
           {error && (
             <div className="text-red-400 text-center p-4 bg-red-900/20 rounded-lg">{error}</div>
           )}
@@ -162,12 +198,12 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open
                 <div className="space-y-3">
                   <div>
                     <h4 className="font-semibold text-blue-300 mb-1">Starting Items</h4>
-                    <p className="text-gray-300">{guide.itemBuild.startingItems.join(', ')}</p>
+                    <p className="text-gray-300">{guide.itemBuild?.startingItems?.join(', ') || 'N/A'}</p>
                   </div>
                   <div>
                     <h4 className="font-semibold text-blue-300 mb-1">Core Items</h4>
                     <ul className="list-disc list-inside text-gray-300 pl-2 space-y-1">
-                      {guide.itemBuild.coreItems.map((item: { item: string, reason: string }, index: number) => (
+                      {(guide.itemBuild?.coreItems || []).map((item: { item: string, reason: string }, index: number) => (
                         <li key={index}><strong>{item.item}:</strong> {item.reason}</li>
                       ))}
                     </ul>
@@ -175,19 +211,19 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open
                   <div>
                     <h4 className="font-semibold text-blue-300 mb-1">Situational Items</h4>
                     <ul className="list-disc list-inside text-gray-300 pl-2 space-y-1">
-                      {guide.itemBuild.situationalItems.map((item: { item: string, reason: string }, index: number) => <li key={index}><strong>{item.item}:</strong> {item.reason}</li>)}
+                      {(guide.itemBuild?.situationalItems || []).map((item: { item: string, reason: string }, index: number) => <li key={index}><strong>{item.item}:</strong> {item.reason}</li>)}
                     </ul>
                   </div>
                 </div>
               </GuideSection>
 
               <GuideSection title="Skill Build" icon={<Star className="text-green-400" />}>
-                <p className="text-gray-300">{guide.skillBuild}</p>
+                <p className="text-gray-300">{guide.skillBuild || 'N/A'}</p>
               </GuideSection>
 
               <GuideSection title="Laning Phase (0-10 min)" icon={<Shield className="text-blue-400" />}>
                 <ul className="list-disc list-inside space-y-1 text-gray-300 pl-2">
-                  {guide.laningPhase.map((tip: string, index: number) => (
+                  {(guide.laningPhase || []).map((tip: string, index: number) => (
                     <li key={index}>{tip}</li>
                   ))}
                 </ul>
@@ -195,7 +231,7 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open
 
               <GuideSection title="Mid Game (10-25 min)" icon={<Shield className="text-blue-400" />}>
                 <ul className="list-disc list-inside space-y-1 text-gray-300 pl-2">
-                  {guide.midGame.map((tip: string, index: number) => (
+                  {(guide.midGame || []).map((tip: string, index: number) => (
                     <li key={index}>{tip}</li>
                   ))}
                 </ul>
@@ -203,7 +239,7 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open
 
               <GuideSection title="Late Game (25+ min)" icon={<Shield className="text-blue-400" />}>
                 <ul className="list-disc list-inside space-y-1 text-gray-300 pl-2">
-                  {guide.lateGame.map((tip: string, index: number) => (
+                  {(guide.lateGame || []).map((tip: string, index: number) => (
                     <li key={index}>{tip}</li>
                   ))}
                 </ul>
@@ -211,7 +247,7 @@ const HeroGuide: React.FC<HeroGuideProps> = ({ hero, role, allies, enemies, open
 
               <GuideSection title="Things to Avoid" icon={<Skull className="text-red-500" />}>
                 <ul className="list-disc list-inside space-y-1 text-red-300 pl-2">
-                  {guide.thingsToAvoid.map((avoid: string, index: number) => <li key={index}>{avoid}</li>)}
+                  {(guide.thingsToAvoid || []).map((avoid: string, index: number) => <li key={index}>{avoid}</li>)}
                 </ul>
               </GuideSection>
             </>
@@ -232,4 +268,48 @@ const GuideSection = ({ title, icon, children }: { title: string; icon: React.Re
   </div>
 );
 
-export default HeroGuide;
+const GuideSkeleton = () => (
+  <div className="space-y-6">
+    <div className="text-center py-4">
+      <p className="text-lg font-semibold text-white animate-pulse">We are still cooking for you...</p>
+    </div>
+    <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+      <div className="flex items-center gap-2 mb-3">
+        <Skeleton className="h-7 w-7 rounded-md" />
+        <Skeleton className="h-7 w-32" />
+      </div>
+      <div className="space-y-4">
+        <Skeleton className="h-4 w-1/4" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-1/3 mt-2" />
+        <div className="pl-2 space-y-1 mt-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+        </div>
+      </div>
+    </div>
+    <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+      <div className="flex items-center gap-2 mb-3">
+        <Skeleton className="h-7 w-7 rounded-md" />
+        <Skeleton className="h-7 w-28" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+    </div>
+    <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+      <div className="flex items-center gap-2 mb-3">
+        <Skeleton className="h-7 w-7 rounded-md" />
+        <Skeleton className="h-7 w-40" />
+      </div>
+      <div className="pl-2 space-y-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-4/6" />
+      </div>
+    </div>
+  </div>
+);
+
+export default HeroGuideNew; 

@@ -6,6 +6,7 @@ import { X, Swords, Shield, Plus, Loader2, BarChart, BrainCircuit, Ban } from 'l
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -26,7 +27,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { heroService } from '@/services/hero-service';
 import ScrambledText from '@/components/ScrambleText';
 import SplashCursor from '@/components/SplashCursor';
-import HeroGuide from '@/components/HeroGuide';
+import HeroGuideNew from '@/components/HeroGuideNew';
 
 const RANKS = ["Herald", "Guardian", "Crusader", "Archon", "Legend", "Ancient", "Divine", "Immortal"];
 const ROLES = ["Carry", "Midlaner", "Offlaner", "Soft Support", "Hard Support"];
@@ -34,7 +35,8 @@ const ROLES = ["Carry", "Midlaner", "Offlaner", "Soft Support", "Hard Support"];
 const getHeroImageUrl = (hero: any) => {
   if (!hero || !hero.name) return '';
   const internalHeroName = hero.name.replace('npc_dota_hero_', '');
-  return `https://cdn.dota2.com/apps/dota2/images/heroes/${internalHeroName}_full.png`;
+  // Using Steam CDN which has proper SSL certificates
+  return `https://steamcdn-a.akamaihd.net/apps/dota2/images/heroes/${internalHeroName}_full.png`;
 };
 
 // Main Component
@@ -278,7 +280,7 @@ const CounterPicker: React.FC = () => {
           <div className="max-w-7xl mx-auto">
             <header className="mb-8 text-center">
               <ScrambledText
-                className="text-4xl sm:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-red-400 m-0 max-w-none"
+                className="text-4xl sm:text-8xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-red-400 m-0 max-w-none"
                 radius={150}
                 duration={0.8}
                 speed={0.3}
@@ -348,7 +350,7 @@ const CounterPicker: React.FC = () => {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-            <HeroGuide
+            <HeroGuideNew
               hero={guidePick?.hero}
               role={guidePick?.role}
               allies={alliedHeroes}
@@ -576,7 +578,7 @@ const HeroSlot: React.FC<HeroSlotProps> = ({
           </TooltipTrigger>
           {isAlly && (
             <TooltipContent>
-              <p>Click to see Dota-Forger's guide for {role}</p>
+              <p>Click to see OpenAI's guide for {role}</p>
             </TooltipContent>
           )}
         </Tooltip>
@@ -650,6 +652,9 @@ const HeroPicker: React.FC<HeroPickerProps> = ({
     <DialogContent className="max-w-4xl bg-gray-900/95 border-gray-700 text-white rounded-xl shadow-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl font-bold text-white">Select a Hero for {role}</DialogTitle>
+        <DialogDescription className="text-gray-400">
+          Search and select a hero to add to your team, or use AI suggestions for optimal picks.
+        </DialogDescription>
       </DialogHeader>
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
         {onSuggest && (

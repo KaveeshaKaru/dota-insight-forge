@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { SearchIcon, BarChart3, Users, Zap, Shield, Sword, Target, Menu, X } from 'lucide-react';
+import { SearchIcon, BarChart3, Users, Zap, Shield, Sword, Target, Menu, X, BrainCircuit, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import MatchAnalysis from '@/components/MatchAnalysis';
 import { Link as RouterLink } from 'react-router-dom';
+import ScrambledText from '../components/ScrambleText';
 
 const Index = () => {
   const [matchId, setMatchId] = useState('');
@@ -178,7 +179,7 @@ const Index = () => {
       </div>
 
       {/* Stats Section with Shadow Fiend Background */}
-      <div className="py-16 px-4 sm:px-6 lg:px-8 relative">
+      <div id="features" className="py-16 px-4 sm:px-6 lg:px-8 relative">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
           style={{ backgroundImage: 'url(/shadow.jpg)' }}
@@ -223,123 +224,35 @@ const Index = () => {
           </div>
 
           {/* Features Section */}
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 mb-16">
-            <Card className="bg-slate-800/50 border-slate-700 text-white hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-red-500/10 animate-fade-in delay-300">
-              <CardHeader>
-                <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center mb-4">
-                  <BarChart3 className="h-6 w-6 text-white" />
-                </div>
-                <CardTitle className="text-xl">Advanced Statistics</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Deep dive into KDA, GPM, XPM, net worth, and item progression analysis
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="bg-slate-800/50 border-slate-700 text-white hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/10 animate-fade-in delay-500">
-              <CardHeader>
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-4">
-                  <ChartIcon className="h-6 w-6 text-white" />
-                </div>
-                <CardTitle className="text-xl">Visual Analytics</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Interactive gold graphs, team fight timelines, and strategic ward placement maps
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="bg-slate-800/50 border-slate-700 text-white hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-yellow-500/10 animate-fade-in delay-700">
-              <CardHeader>
-                <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center mb-4">
-                  <Zap className="h-6 w-6 text-white" />
-                </div>
-                <CardTitle className="text-xl">AI-Powered Insights</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Smart recommendations and gameplay improvements based on match analysis
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
-
-          {/* CTA Section */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 to-yellow-600/10 rounded-3xl blur-xl"></div>
-            <Card className="bg-slate-800/70 border-slate-700 text-white max-w-3xl mx-auto relative backdrop-blur-sm animate-fade-in delay-900">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-3xl mb-2 bg-gradient-to-r from-red-400 to-yellow-400 bg-clip-text text-transparent">
-                  Ready to Analyze Your Match?
-                </CardTitle>
-                <CardDescription className="text-gray-300 text-lg">
-                  Enter your Dota 2 match ID and unlock comprehensive insights to improve your gameplay
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6 px-6 pb-8">
-                {/* Match ID Input */}
-                <div className="w-full max-w-md mx-auto">
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Match ID <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    placeholder="e.g., 7123456789"
-                    value={matchId}
-                    onChange={(e) => {
-                      const numericValue = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
-                      setMatchId(numericValue);
-                    }}
-                    onPaste={(e) => {
-                      e.preventDefault();
-                      const pastedData = e.clipboardData.getData('text');
-                      const numericValue = pastedData.replace(/[^0-9]/g, '').slice(0, 10);
-                      setMatchId(numericValue);
-                    }}
-                    maxLength={10}
-                    className="w-full h-12 bg-slate-700/50 border border-slate-600 text-white placeholder:text-gray-400 text-lg rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none transition-all duration-200"
-                  />
-                </div>
-
-                {/* Analyze Button */}
-                <div className="w-full max-w-md mx-auto">
-                  <Button
-                    onClick={handleAnalyze}
-                    disabled={!matchId.trim() || isAnalyzing}
-                    className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-red-600 via-red-500 to-yellow-500 hover:from-red-700 hover:via-red-600 hover:to-yellow-600 text-white transition-all duration-300 rounded-lg shadow-md hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isAnalyzing ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                        Analyzing Match...
-                      </>
-                    ) : (
-                      <>
-                        <SearchIcon className="h-5 w-5 mr-3" />
-                        Analyze Match Now
-                      </>
-                    )}
-                  </Button>
-                </div>
-
-                {/* Note */}
-                <p className="text-center text-sm text-gray-400">
-                  Get your match ID from <span className="text-red-400 font-medium">Dota 2</span> or{" "}
-                  <span className="text-blue-400 font-medium">OpenDota</span>.
-                </p>
-              </CardContent>
-
-            </Card>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="border-t border-slate-700 bg-slate-900/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <p className="text-gray-400">
-              Built for the Dota 2 community with ❤️ | Powered by Zack Malli
-            </p>
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-2 mb-16">
+            <FeatureCard
+              icon={<BarChart3 className="h-6 w-6 text-white" />}
+              title="Advanced Statistics"
+              description="Deep dive into KDA, GPM, XPM, net worth, and item progression analysis"
+              shadowColor="red"
+              link="/match-analysis"
+            />
+             <FeatureCard
+              icon={<Bot className="h-6 w-6 text-white" />}
+              title="Counter Picker"
+              description="Get best hero suggestions to counter your opponents and synergize with your team."
+              shadowColor="blue"
+              link="/counter-picker"
+            />
+            <FeatureCard
+              icon={<Users className="h-6 w-6 text-white" />}
+              title="Team Fight Analysis"
+              description="Break down crucial team fights to understand positioning, ability usage, and impact"
+              shadowColor="yellow"
+              link="/match-analysis"
+            />
+            <FeatureCard
+              icon={<Zap className="h-6 w-6 text-white" />}
+              title="Performance Benchmarking"
+              description="Compare your performance against benchmarks for your bracket and hero"
+              shadowColor="purple"
+              link="/match-analysis"
+            />
           </div>
         </div>
       </div>
@@ -347,11 +260,36 @@ const Index = () => {
   );
 };
 
-// Custom Chart Icon component
-const ChartIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012-2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-  </svg>
-);
+
+const FeatureCard = ({ icon, title, description, shadowColor, link }) => {
+  const shadowVariants = {
+    red: 'hover:shadow-red-500/20',
+    blue: 'hover:shadow-blue-500/20',
+    green: 'hover:shadow-green-500/20',
+    yellow: 'hover:shadow-yellow-500/20',
+    purple: 'hover:shadow-purple-500/20',
+    pink: 'hover:shadow-pink-500/20',
+  };
+
+  const content = (
+      <Card className={`bg-slate-800/50 border-slate-700 text-white h-full flex flex-col hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 hover:shadow-xl ${shadowVariants[shadowColor] || ''}`}>
+        <CardHeader>
+          <div className={`w-12 h-12 bg-gradient-to-r from-${shadowColor}-500 to-${shadowColor}-600 rounded-lg flex items-center justify-center mb-4`}>
+            {icon}
+          </div>
+          <CardTitle className="text-xl">{title}</CardTitle>
+          <CardDescription className="text-gray-400">
+            {description}
+          </CardDescription>
+        </CardHeader>
+      </Card>
+  );
+
+  if (link) {
+    return <RouterLink to={link} className="h-full">{content}</RouterLink>
+  }
+
+  return content;
+}
 
 export default Index;
